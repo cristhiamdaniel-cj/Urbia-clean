@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏙️ UrbIA IoT - Smart City Manizales</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            display: flex;
+            height: 100vh;
+            padding: 10px;
+            gap: 10px;
+        }
+        
+        .map-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #667eea;
+        }
+        
+        .header p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .btn-custom {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-topology { background: #667eea; }
+        .btn-analysis { background: #10b981; }
+        .btn-docs { background: #f59e0b; }
+        .btn-admin { background: #ef4444; }
+        
+        .map-container {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .sidebar {
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .card h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-box.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stat-box.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .stat-box.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .stat-box.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .telemetry-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .telemetry-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .telemetry-item.normal { background: #e0f2fe; border-left: 4px solid #0ea5e9; }
+        .telemetry-item.warning { background: #fef3c7; border-left: 4px solid #f59e0b; }
+        .telemetry-item.critical { background: #fee2e2; border-left: 4px solid #ef4444; }
+        
+        .telemetry-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .telemetry-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .telemetry-unit {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .routes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .route-item {
+            padding: 12px;
+            border-radius: 8px;
+            background: #f3f4f6;
+        }
+        
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .route-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .route-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .route-badge.critical { background: #ef4444; color: white; }
+        .route-badge.normal { background: #10b981; color: white; }
+        
+        .route-details {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- MAPA (IZQUIERDA) -->
+        <div class="map-section">
+            <div class="header">
+                <h1><i class="fas fa-city"></i> UrbIA IoT - Smart City Manizales</h1>
+                <p>Sistema de monitoreo y control inteligente - Clean Architecture</p>
+                <div class="buttons">
+                    <button class="btn-custom btn-topology" onclick="window.location.href='/network-topology'">
+                        <i class="fas fa-project-diagram"></i> Topología de Red
+                    </button>
+                    <button class="btn-custom btn-analysis" onclick="window.location.href='/analysis'">
+                        <i class="fas fa-chart-line"></i> Análisis Matemático
+                    </button>
+                    <button class="btn-custom btn-docs" onclick="window.location.href='/api-docs'">
+                        <i class="fas fa-book"></i> API Docs
+                    </button>
+                    <button class="btn-custom btn-admin" onclick="window.location.href='/admin'">
+                        <i class="fas fa-cog"></i> Admin
+                    </button>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+        
+        <!-- COLUMNA DE DATOS (DERECHA) -->
+        <div class="sidebar">
+            <!-- ESTADÍSTICAS -->
+            <div class="card">
+                <h3><i class="fas fa-chart-bar"></i> Estadísticas del Sistema</h3>
+                <div class="stat-grid">
+                    <div class="stat-box blue">
+                        <div class="stat-label">Total Sensores</div>
+                        <div class="stat-value" id="totalSensors">0</div>
+                    </div>
+                    <div class="stat-box green">
+                        <div class="stat-label">Activos</div>
+                        <div class="stat-value" id="activeSensors">0</div>
+                    </div>
+                    <div class="stat-box orange">
+                        <div class="stat-label">Alertas</div>
+                        <div class="stat-value" id="criticalAlerts">0</div>
+                    </div>
+                    <div class="stat-box red">
+                        <div class="stat-label">Gateways</div>
+                        <div class="stat-value">2</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TELEMETRÍA EN TIEMPO REAL -->
+            <div class="card">
+                <h3><i class="fas fa-signal"></i> Telemetría en Tiempo Real</h3>
+                <div class="telemetry-list" id="telemetryList">
+                    <p style="text-align: center; color: #999;">Cargando datos...</p>
+                </div>
+            </div>
+            
+            <!-- RUTAS SDN ACTIVAS -->
+            <div class="card">
+                <h3><i class="fas fa-route"></i> Rutas SDN Activas</h3>
+                <div class="routes-list" id="routesList">
+                    <p style="text-align: center; color: #999;">Cargando rutas...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Inicializar mapa centrado en Manizales
+        const map = L.map('map').setView([5.0703, -75.5138], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        let sensors = [];
+        let markers = {};
+        
+        // Cargar sensores
+        function loadSensors() {
+            fetch('/api/sensors')
+                .then(r => r.json())
+                .then(data => {
+                    sensors = data;
+                    updateMap();
+                    updateStats();
+                });
+        }
+        
+        // Actualizar mapa
+        function updateMap() {
+            // Limpiar marcadores anteriores
+            Object.values(markers).forEach(m => map.removeLayer(m));
+            markers = {};
+            
+            sensors.forEach(sensor => {
+                const color = sensor.priority === 'CRITICAL' ? 'red' : 
+                             sensor.priority === 'HIGH' ? 'orange' : 
+                             sensor.priority === 'NORMAL' ? 'blue' : 'green';
+                
+                const icon = L.divIcon({
+                    html: `<div style="background: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+                    className: '',
+                    iconSize: [16, 16]
+                });
+                
+                const marker = L.marker([sensor.location.lat, sensor.location.lng], { icon })
+                    .bindPopup(`<b>${sensor.name}</b><br>${sensor.type}<br>Prioridad: ${sensor.priority}`)
+                    .addTo(map);
+                
+                markers[sensor.id] = marker;
+            });
+        }
+        
+        // Actualizar estadísticas
+        function updateStats() {
+            fetch('/api/metrics')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('totalSensors').textContent = data.total_sensors;
+                    document.getElementById('activeSensors').textContent = data.active_sensors;
+                    document.getElementById('criticalAlerts').textContent = data.critical_alerts;
+                });
+        }
+        
+        // Actualizar telemetría
+        function updateTelemetry() {
+            fetch('/api/telemetry/current')
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('telemetryList');
+                    if (data.length === 0) {
+                        list.innerHTML = '<p style="text-align: center; color: #999;">Sin datos</p>';
+                        return;
+                    }
+                    
+                    list.innerHTML = data.slice(0, 8).map(t => {
+                        const status = t.is_critical ? 'critical' : t.is_warning ? 'warning' : 'normal';
+                        return `
+                            <div class="telemetry-item ${status}">
+                                <div>
+                                    <div class="telemetry-name">${t.sensor_name || t.sensor_id}</div>
+                                    <div style="font-size: 11px; color: #666;">${new Date(t.timestamp).toLocaleTimeString()}</div>
+                                </div>
+                                <div>
+                                    <span class="telemetry-value">${t.value.toFixed(1)}</span>
+                                    <span class="telemetry-unit">${t.unit}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                });
+        }
+        
+        // Actualizar rutas
+        function updateRoutes() {
+            fetch('/api/events')
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('routesList');
+                    if (data.length === 0) {
+                        list.innerHTML = '<p style="text-align: center; color: #999;">Sin rutas activas</p>';
+                        return;
+                    }
+                    
+                    list.innerHTML = data.slice(0, 6).map(event => {
+                        const isCritical = event.type.includes('CRITICA');
+                        return `
+                            <div class="route-item">
+                                <div class="route-header">
+                                    <span class="route-name">${event.sensor}</span>
+                                    <span class="route-badge ${isCritical ? 'critical' : 'normal'}">
+                                        ${isCritical ? 'CRÍTICO' : 'NORMAL'}
+                                    </span>
+                                </div>
+                                <div class="route-details">
+                                    ${event.action} • ${event.latency}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                });
+        }
+        
+        // Inicializar
+        loadSensors();
+        
+        // Actualizar cada 3 segundos
+        setInterval(() => {
+            loadSensors();
+            updateTelemetry();
+            updateRoutes();
+        }, 3000);
+    </script>
+</body>
+</html>

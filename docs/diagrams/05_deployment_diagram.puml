@@ -1,0 +1,74 @@
+@startuml Deployment Diagram
+!theme cerulean-outline
+skinparam backgroundColor #FEFEFE
+
+node "Development Machine" {
+    node "Docker Container\n(urbia-clean)" as CONTAINER {
+        artifact "Flask App" as FLASK
+        artifact "Python 3.9" as PYTHON
+        
+        component "Application" {
+            [Dashboard Web]
+            [REST API]
+            [Telemetry Generator]
+            [SDN Controller]
+        }
+        
+        database "In-Memory\nRepositories" as MEM_DB
+    }
+}
+
+node "Client Browser" as BROWSER {
+    [HTML/CSS/JS]
+    [Leaflet Maps]
+    [D3.js Visualizations]
+}
+
+cloud "Internet" {
+    [OpenStreetMap\nTile Server] as OSM
+}
+
+node "Docker Host" as HOST {
+    [Docker Engine]
+    [Docker Compose]
+}
+
+' Connections
+BROWSER --> FLASK : HTTP :5001
+BROWSER --> OSM : HTTPS :443
+FLASK --> MEM_DB : Read/Write
+HOST --> CONTAINER : Manages
+CONTAINER --> PYTHON : Runs on
+
+note right of CONTAINER
+  **Exposed Ports:**
+  - 5001:5000 (Web/API)
+  
+  **Volumes:**
+  - ./logs:/app/logs
+  - ./config:/app/config
+  
+  **Environment:**
+  - PYTHONPATH=/app
+  - PYTHONUNBUFFERED=1
+end note
+
+note right of FLASK
+  **Services:**
+  - Dashboard: /
+  - API: /api/*
+  - Analysis: /analysis
+  - Topology: /network-topology
+  - Docs: /api-docs
+end note
+
+note right of MEM_DB
+  **Data Storage:**
+  - 15 Sensors
+  - 2 Gateways
+  - Telemetry History (recent 100)
+  - Routing Decisions (recent 50)
+  - SDN Metrics (real-time)
+end note
+
+@enduml

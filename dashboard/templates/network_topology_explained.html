@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 El Cerebro de la Red - Controlador SDN</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Comic Sans MS', 'Arial', sans-serif;
+        }
+        .container-fluid {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .explanation-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 3px solid #ff6b6b;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .simple-title {
+            font-size: 32px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .simple-text {
+            font-size: 20px;
+            line-height: 1.8;
+            color: #333;
+        }
+        .analogy-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+        .strategy-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 10px;
+            border: 3px solid #6c5ce7;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .strategy-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.3);
+        }
+        .strategy-active {
+            border-color: #00b894;
+            background: #dfe6e9;
+        }
+        #topology-svg {
+            border: 3px solid #6c5ce7;
+            border-radius: 15px;
+            background: #f8f9fa;
+        }
+        .node {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .node:hover {
+            filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.8));
+        }
+        .packet {
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; r: 8; }
+            50% { opacity: 0.5; r: 12; }
+        }
+        .link {
+            stroke-width: 3;
+            transition: all 0.3s;
+        }
+        .link-active {
+            stroke: #00b894;
+            stroke-width: 6;
+            animation: flow 2s linear infinite;
+        }
+        @keyframes flow {
+            0% { stroke-dashoffset: 0; }
+            100% { stroke-dashoffset: 20; }
+        }
+        .btn-magic {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 50px;
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+            transition: all 0.3s;
+        }
+        .btn-magic:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(108, 92, 231, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-brain"></i> El Cerebro Mágico de la Red</h1>
+            <a href="/" class="btn btn-primary">← Volver</a>
+        </div>
+
+        <!-- EXPLICACIÓN SIMPLE -->
+        <div class="explanation-box">
+            <h2 class="simple-title">🧠 ¿Qué es el Controlador SDN?</h2>
+            
+            <div class="simple-text">
+                <p><strong>Imagina que tienes muchos juguetes (sensores) 🚗🚁🚂</strong></p>
+                
+                <div class="analogy-box">
+                    <h4>🎪 Es como el Director de un Circo:</h4>
+                    <ul>
+                        <li><strong>Los sensores</strong> son como los artistas del circo (malabaristas, payasos, acróbatas)</li>
+                        <li><strong>Los gateways</strong> son como las puertas de entrada al escenario</li>
+                        <li><strong>El SDN (punto amarillo)</strong> es el DIRECTOR que decide:
+                            <ul>
+                                <li>¿Qué artista sale primero? 🎭</li>
+                                <li>¿Cuál camino es más rápido? 🏃</li>
+                                <li>¿Quién tiene prioridad? ⭐</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="analogy-box">
+                    <h4>🚦 También es como un Policía de Tráfico:</h4>
+                    <ul>
+                        <li>Los datos son como <strong>carros</strong> 🚗</li>
+                        <li>La red son las <strong>calles</strong> 🛣️</li>
+                        <li>El SDN decide qué carro va por qué calle para evitar <strong>embotellamientos</strong> 🚥</li>
+                    </ul>
+                </div>
+
+                <h3 class="mt-4">✨ Las 4 Estrategias Mágicas del SDN:</h3>
+            </div>
+        </div>
+
+        <!-- ESTRATEGIAS -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="strategy-card" data-strategy="round_robin">
+                    <h4>🎯 1. Round Robin (Turnos Justos)</h4>
+                    <p><strong>Como un carrusel:</strong> Todos los sensores envían datos por turnos, uno después del otro. ¡Nadie se queda sin su turno!</p>
+                    <p>🎠 Sensor 1 → Sensor 2 → Sensor 3 → Sensor 1...</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="strategy-card" data-strategy="priority">
+                    <h4>⭐ 2. Prioridad (Los Importantes Primero)</h4>
+                    <p><strong>Como una fila VIP:</strong> Los sensores más importantes (ruido crítico) pasan primero, como en un parque de diversiones.</p>
+                    <p>👑 Crítico → Alto → Normal → Bajo</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="strategy-card" data-strategy="load_balance">
+                    <h4>⚖️ 3. Balance de Carga (Equilibrio)</h4>
+                    <p><strong>Como repartir dulces:</strong> Si un camino tiene muchos datos, el SDN usa otro camino para que no se llene.</p>
+                    <p>🍬 Camino A (lleno) → 🍭 Camino B (vacío)</p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="strategy-card" data-strategy="shortest_path">
+                    <h4>🏃 4. Camino Más Corto (El Más Rápido)</h4>
+                    <p><strong>Como tomar el atajo:</strong> El SDN elige el camino más rápido para que los datos lleguen volando.</p>
+                    <p>🚀 Camino corto = Datos rápidos</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTÓN DE ANIMACIÓN -->
+        <div class="text-center mb-4">
+            <button class="btn btn-magic" id="btnAnimate">
+                <i class="fas fa-magic"></i> ¡Ver la Magia en Acción!
+            </button>
+        </div>
+
+        <!-- VISUALIZACIÓN -->
+        <div class="row">
+            <div class="col-12">
+                <h3 class="text-center mb-3">🌐 Mira cómo el SDN hace su magia:</h3>
+                <svg id="topology-svg" width="100%" height="600"></svg>
+            </div>
+        </div>
+
+        <!-- LEYENDA ANIMADA -->
+        <div class="alert alert-info mt-4">
+            <h5><i class="fas fa-info-circle"></i> Lo que ves aquí:</h5>
+            <ul>
+                <li>🔵 <strong>Puntos Azules</strong> = Sensores (miden ruido, temperatura, etc.)</li>
+                <li>🟢 <strong>Puntos Verdes</strong> = Gateways (puertas de entrada)</li>
+                <li>🟡 <strong>Punto Amarillo</strong> = SDN Controller (el CEREBRO que decide todo)</li>
+                <li>📊 <strong>Líneas</strong> = Caminos por donde viajan los datos</li>
+                <li>✨ <strong>Puntos que se mueven</strong> = Datos viajando</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Datos de la red
+        const nodes = [
+            { id: 'sdn', label: 'SDN\nController', type: 'controller', x: 400, y: 150 },
+            { id: 'gw1', label: 'Gateway\nNorte', type: 'gateway', x: 200, y: 300 },
+            { id: 'gw2', label: 'Gateway\nSur', type: 'gateway', x: 600, y: 300 },
+            { id: 's1', label: 'Ruido', type: 'sensor', x: 100, y: 450 },
+            { id: 's2', label: 'Temp', type: 'sensor', x: 200, y: 500 },
+            { id: 's3', label: 'Tráfico', type: 'sensor', x: 300, y: 450 },
+            { id: 's4', label: 'Aire', type: 'sensor', x: 500, y: 500 },
+            { id: 's5', label: 'Luz', type: 'sensor', x: 600, y: 450 }
+        ];
+
+        const links = [
+            { source: 'gw1', target: 'sdn' },
+            { source: 'gw2', target: 'sdn' },
+            { source: 's1', target: 'gw1' },
+            { source: 's2', target: 'gw1' },
+            { source: 's3', target: 'gw1' },
+            { source: 's4', target: 'gw2' },
+            { source: 's5', target: 'gw2' }
+        ];
+
+        const svg = d3.select('#topology-svg');
+        const width = svg.node().getBoundingClientRect().width;
+        const height = 600;
+
+        // Dibujar enlaces
+        const linkGroup = svg.append('g');
+        const linkElements = linkGroup.selectAll('line')
+            .data(links)
+            .enter()
+            .append('line')
+            .attr('class', 'link')
+            .attr('stroke', '#999')
+            .attr('x1', d => nodes.find(n => n.id === d.source).x)
+            .attr('y1', d => nodes.find(n => n.id === d.source).y)
+            .attr('x2', d => nodes.find(n => n.id === d.target).x)
+            .attr('y2', d => nodes.find(n => n.id === d.target).y);
+
+        // Dibujar nodos
+        const nodeGroup = svg.append('g');
+        const nodeElements = nodeGroup.selectAll('g')
+            .data(nodes)
+            .enter()
+            .append('g')
+            .attr('class', 'node')
+            .attr('transform', d => `translate(${d.x}, ${d.y})`);
+
+        // Círculos de nodos
+        nodeElements.append('circle')
+            .attr('r', d => d.type === 'controller' ? 30 : d.type === 'gateway' ? 25 : 20)
+            .attr('fill', d => {
+                if (d.type === 'controller') return '#feca57';
+                if (d.type === 'gateway') return '#1dd1a1';
+                return '#5f27cd';
+            })
+            .attr('stroke', '#fff')
+            .attr('stroke-width', 3);
+
+        // Etiquetas
+        nodeElements.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dy', d => d.type === 'controller' ? 50 : 40)
+            .style('font-size', '14px')
+            .style('font-weight', 'bold')
+            .style('fill', '#333')
+            .each(function(d) {
+                const lines = d.label.split('\n');
+                const text = d3.select(this);
+                lines.forEach((line, i) => {
+                    text.append('tspan')
+                        .attr('x', 0)
+                        .attr('dy', i === 0 ? 0 : '1.2em')
+                        .text(line);
+                });
+            });
+
+        // Iconos
+        nodeElements.append('text')
+            .attr('text-anchor', 'middle')
+            .attr('dy', 5)
+            .style('font-size', '20px')
+            .text(d => {
+                if (d.type === 'controller') return '🧠';
+                if (d.type === 'gateway') return '🚪';
+                return '📡';
+            });
+
+        // Animación de paquetes
+        let animationInterval;
+        document.getElementById('btnAnimate').addEventListener('click', () => {
+            // Limpiar animación anterior
+            if (animationInterval) clearInterval(animationInterval);
+            svg.selectAll('.packet').remove();
+
+            // Resaltar tarjeta de estrategia aleatoria
+            const strategies = ['round_robin', 'priority', 'load_balance', 'shortest_path'];
+            const randomStrategy = strategies[Math.floor(Math.random() * strategies.length)];
+            
+            document.querySelectorAll('.strategy-card').forEach(card => {
+                card.classList.remove('strategy-active');
+            });
+            document.querySelector(`[data-strategy="${randomStrategy}"]`).classList.add('strategy-active');
+
+            // Animar paquetes
+            const sensorNodes = nodes.filter(n => n.type === 'sensor');
+            let currentIndex = 0;
+
+            animationInterval = setInterval(() => {
+                const sensor = sensorNodes[currentIndex];
+                const gateway = nodes.find(n => n.id === (sensor.x < 400 ? 'gw1' : 'gw2'));
+                const controller = nodes.find(n => n.id === 'sdn');
+
+                // Crear paquete
+                const packet = svg.append('circle')
+                    .attr('class', 'packet')
+                    .attr('cx', sensor.x)
+                    .attr('cy', sensor.y)
+                    .attr('r', 8)
+                    .attr('fill', '#ff6b6b')
+                    .attr('stroke', '#fff')
+                    .attr('stroke-width', 2);
+
+                // Animar hacia gateway
+                packet.transition()
+                    .duration(1000)
+                    .attr('cx', gateway.x)
+                    .attr('cy', gateway.y)
+                    .transition()
+                    .duration(1000)
+                    .attr('cx', controller.x)
+                    .attr('cy', controller.y)
+                    .on('end', function() {
+                        d3.select(this).remove();
+                    });
+
+                currentIndex = (currentIndex + 1) % sensorNodes.length;
+            }, 800);
+        });
+
+        // Click en estrategias
+        document.querySelectorAll('.strategy-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.strategy-card').forEach(c => c.classList.remove('strategy-active'));
+                card.classList.add('strategy-active');
+            });
+        });
+    </script>
+</body>
+</html>

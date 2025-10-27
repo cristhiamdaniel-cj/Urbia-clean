@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>📚 API Documentation - UrbIA IoT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 42px;
+            font-weight: bold;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 18px;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .endpoint:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+        
+        .method {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+        
+        .get { background: #10b981; color: white; }
+        .post { background: #3b82f6; color: white; }
+        .put { background: #f59e0b; color: white; }
+        .delete { background: #ef4444; color: white; }
+        
+        .endpoint-path {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .description {
+            color: #666;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        .code-block {
+            background: #1e293b;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .section-title {
+            color: #667eea;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 40px 0 20px 0;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .param-table {
+            width: 100%;
+            margin: 15px 0;
+        }
+        
+        .param-table th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .param-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .response-example {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-info { background: #dbeafe; color: #1e40af; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        
+        .try-it-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .try-it-btn:hover {
+            background: #059669;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Volver al Dashboard</a>
+        
+        <div class="header">
+            <h1><i class="fas fa-book"></i> API Documentation</h1>
+            <p>UrbIA IoT - Smart City Manizales REST API</p>
+            <p style="font-size: 14px; color: #999;">Base URL: <code>http://localhost:5001/api\</code\>\</p\>
+        </div>
+        
+        <!-- SENSORES -->
+        <div class="section-title"><i class="fas fa-broadcast-tower"></i> Sensores</div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/api/sensors</span>
+            <div class="description">
+                Obtiene la lista completa de sensores IoT con su información de ubicación, tipo, prioridad y última telemetría.
+            </div>
+            
+            <h5>Respuesta (200 OK):</h5>
+            <div class="code-block">
+[
+  {
+    "id": "NOISE-001",
+    "name": "Monitor de Ruido - Parque Caldas",
+    "type": "RUIDO",
+    "location": {
+      "lat": 5.0689,
+      "lng": -75.5174,
+      "city": "Manizales"
+    },
+    "priority": "CRITICAL",
+    "unit": "dB",
+    "status": "active",
+    "last_reading": {
+      "value": 79.7,
+      "timestamp": "2025-10-25T12:05:30Z",
+      "is_critical": false
+    }
+  }
+]
+            </div>
+            
+            <button class="try-it-btn" onclick="tryEndpoint('/api/sensors')">
+                <i class="fas fa-play"></i> Probar Ahora
+            </button>
+            <span class="badge badge-success">15 sensores activos</span>
+            <span class="badge badge-info">Actualización: Tiempo real</span>
+        </div>
+        
+        <!-- TELEMETRÍA -->
+        <div class="section-title"><i class="fas fa-chart-line"></i> Telemetría</div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/api/telemetry/current</span>
+            <div class="description">
+                Obtiene las lecturas más recientes de telemetría de todos los sensores activos.
+            </div>
+            
+            <h5>Respuesta (200 OK):</h5>
+            <div class="code-block">
+[
+  {
+    "sensor_id": "NOISE-001",
+    "sensor_name": "Monitor de Ruido - Parque Caldas",
+    "value": 58.1,
+    "unit": "dB",
+    "timestamp": "2025-10-25T12:05:30.123Z",
+    "is_critical": false,
+    "is_warning": false
+  }
+]
+            </div>
+            
+            <button class="try-it-btn" onclick="tryEndpoint('/api/telemetry/current')">
+                <i class="fas fa-play"></i> Probar Ahora
+            </button>
+            <span class="badge badge-info">Actualización: Cada 2 segundos</span>
+        </div>
+        
+        <!-- MÉTRICAS DEL SISTEMA -->
+        <div class="section-title"><i class="fas fa-tachometer-alt"></i> Métricas del Sistema</div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/api/metrics</span>
+            <div class="description">
+                Obtiene métricas agregadas del sistema: total de sensores, sensores activos y alertas críticas.
+            </div>
+            
+            <h5>Respuesta (200 OK):</h5>
+            <div class="code-block">
+{
+  "total_sensors": 15,
+  "active_sensors": 15,
+  "critical_alerts": 0
+}
+            </div>
+            
+            <button class="try-it-btn" onclick="tryEndpoint('/api/metrics')">
+                <i class="fas fa-play"></i> Probar Ahora
+            </button>
+        </div>
+        
+        <!-- EVENTOS SDN -->
+        <div class="section-title"><i class="fas fa-route"></i> Eventos SDN</div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/api/events</span>
+            <div class="description">
+                Obtiene el historial de decisiones de enrutamiento del controlador SDN.
+            </div>
+            
+            <h5>Parámetros opcionales:</h5>
+            <table class="param-table">
+                <thead>
+                    <tr>
+                        <th>Parámetro</th>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Por defecto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>limit</code></td>
+                        <td>integer</td>
+                        <td>Número de eventos a retornar</td>
+                        <td>50</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h5>Respuesta (200 OK):</h5>
+            <div class="code-block">
+[
+  {
+    "timestamp": "2025-10-25T12:05:30Z",
+    "type": "Enrutamiento Normal",
+    "sensor": "NOISE-003",
+    "action": "Paquete → Ruta A (Larga)",
+    "latency": "29.2ms"
+  }
+]
+            </div>
+            
+            <button class="try-it-btn" onclick="tryEndpoint('/api/events')">
+                <i class="fas fa-play"></i> Probar Ahora
+            </button>
+            <span class="badge badge-success">50 eventos recientes</span>
+        </div>
+        
+        <!-- ANÁLISIS SDN -->
+        <div class="section-title"><i class="fas fa-brain"></i> Análisis Matemático SDN</div>
+        
+        <div class="endpoint">
+            <span class="method get">GET</span>
+            <span class="endpoint-path">/api/sdn-analysis</span>
+            <div class="description">
+                Obtiene análisis matemático en tiempo real del controlador SDN: latencia, throughput, congestión, estrategias y estadísticas.
+            </div>
+            
+            <h5>Respuesta (200 OK):</h5>
+            <div class="code-block">
+{
+  "avg_latency": 20.00,
+  "total_throughput": 1134.6,
+  "throughput_north": 800.2,
+  "throughput_south": 334.4,
+  "queue_size": 2,
+  "congestion_pct": 40.0,
+  "congestion_status": {
+    "Ruta A (Larga)": 100.0,
+    "Ruta B (Corta)": 5.9
+  },
+  "strategy_distribution": [45, 12, 8, 5],
+  "sensors": [
+    {
+      "id": "NOISE-001",
+      "type": "NOISE",
+      "interval": 1,
+      "packets_sent": 125,
+      "latency": 18.5
+    }
+  ],
+  "stats": {
+    "latency": {
+      "min": 10.2,
+      "max": 45.8,
+      "mean": 20.0,
+      "std": 8.3
+    },
+    "throughput": {
+      "min": 950.0,
+      "max": 1200.0,
+      "mean": 1134.6,
+      "std": 125.4
+    }
+  },
+  "timestamp": "2025-10-25T12:05:30.123Z"
+}
+            </div>
+            
+            <button class="try-it-btn" onclick="tryEndpoint('/api/sdn-analysis')">
+                <i class="fas fa-play"></i> Probar Ahora
+            </button>
+            <span class="badge badge-warning">Para tesis doctoral</span>
+            <span class="badge badge-info">Métricas en tiempo real</span>
+        </div>
+        
+        <!-- CÓDIGOS DE RESPUESTA -->
+        <div class="section-title"><i class="fas fa-exclamation-circle"></i> Códigos de Respuesta</div>
+        
+        <div class="response-example">
+            <h5>Códigos HTTP:</h5>
+            <ul>
+                <li><strong>200 OK</strong> - Solicitud exitosa</li>
+                <li><strong>400 Bad Request</strong> - Parámetros inválidos</li>
+                <li><strong>404 Not Found</strong> - Recurso no encontrado</li>
+                <li><strong>500 Internal Server Error</strong> - Error del servidor</li>
+                <li><strong>503 Service Unavailable</strong> - Servicio no disponible temporalmente</li>
+            </ul>
+        </div>
+        
+        <!-- EJEMPLOS DE USO -->
+        <div class="section-title"><i class="fas fa-code"></i> Ejemplos de Uso</div>
+        
+        <div class="endpoint">
+            <h5>cURL:</h5>
+            <div class="code-block">
+# Obtener todos los sensores
+curl http://localhost:5001/api/sensors
+
+# Obtener análisis SDN
+curl http://localhost:5001/api/sdn-analysis
+
+# Obtener eventos recientes
+curl http://localhost:5001/api/events
+            </div>
+            
+            <h5>Python:</h5>
+            <div class="code-block">
+import requests
+
+# Obtener sensores
+response = requests.get('http://localhost:5001/api/sensors')
+sensors = response.json()
+
+# Obtener análisis SDN
+response = requests.get('http://localhost:5001/api/sdn-analysis')
+analysis = response.json()
+print(f"Latencia: {analysis['avg_latency']}ms")
+print(f"Throughput: {analysis['total_throughput']} pkt/s")
+            </div>
+            
+            <h5>JavaScript (Fetch):</h5>
+            <div class="code-block">
+// Obtener telemetría
+fetch('http://localhost:5001/api/telemetry/current')
+  .then(response => response.json())
+  .then(data => {
+    console.log('Telemetría:', data);
+  });
+            </div>
+        </div>
+        
+        <div style="margin-top: 50px; text-align: center; color: #999;">
+            <p>UrbIA IoT API v1.0 | Clean Architecture | SDN-Enabled</p>
+            <p>Desarrollado para tesis doctoral en Smart Cities</p>
+        </div>
+    </div>
+    
+    <script>
+        function tryEndpoint(endpoint) {
+            window.open(`http://localhost:5001${endpoint}`, '_blank');
+        }
+    </script>
+</body>
+</html>

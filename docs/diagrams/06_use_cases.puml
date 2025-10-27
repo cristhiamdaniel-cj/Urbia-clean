@@ -1,0 +1,106 @@
+@startuml Use Cases Diagram
+!theme cerulean-outline
+skinparam backgroundColor #FEFEFE
+
+left to right direction
+
+actor "Investigador\nDoctoral" as RESEARCHER
+actor "Operador\nSistema" as OPERATOR
+actor "Ciudadano" as CITIZEN
+actor "Sensor IoT" as SENSOR #LightBlue
+
+rectangle "UrbIA IoT System" {
+    
+    package "Monitoring & Visualization" {
+        usecase "Ver Dashboard\nEn Tiempo Real" as UC1
+        usecase "Filtrar Sensores\nPor Tipo" as UC2
+        usecase "Ver Topología\nDe Red" as UC3
+        usecase "Visualizar Mapa\nInteractivo" as UC4
+    }
+    
+    package "Analysis & Reporting" {
+        usecase "Analizar Métricas\nSDN" as UC5
+        usecase "Exportar Datos\nCSV/Excel" as UC6
+        usecase "Generar Reporte\nEstadístico" as UC7
+        usecase "Ver Historial\nDe Eventos" as UC8
+    }
+    
+    package "Sensor Management" {
+        usecase "Registrar\nNuevo Sensor" as UC9
+        usecase "Configurar\nPrioridad" as UC10
+        usecase "Activar/Desactivar\nSensor" as UC11
+    }
+    
+    package "SDN Control" {
+        usecase "Enrutar Paquete\nIoT" as UC12
+        usecase "Seleccionar\nEstrategia SDN" as UC13
+        usecase "Balancear\nCarga" as UC14
+        usecase "Detectar\nCongestión" as UC15
+    }
+    
+    package "Telemetry Processing" {
+        usecase "Generar\nTelemetría" as UC16
+        usecase "Procesar\nLectura" as UC17
+        usecase "Evaluar\nUmbrales" as UC18
+        usecase "Disparar\nAlerta Crítica" as UC19
+    }
+}
+
+' Researcher interactions
+RESEARCHER --> UC1
+RESEARCHER --> UC5
+RESEARCHER --> UC6
+RESEARCHER --> UC7
+RESEARCHER --> UC3
+
+' Operator interactions
+OPERATOR --> UC1
+OPERATOR --> UC2
+OPERATOR --> UC8
+OPERATOR --> UC9
+OPERATOR --> UC10
+OPERATOR --> UC11
+
+' Citizen interactions
+CITIZEN --> UC1
+CITIZEN --> UC4
+CITIZEN --> UC2
+
+' Sensor interactions
+SENSOR --> UC16
+
+' Internal system relationships
+UC16 ..> UC12 : <<include>>
+UC12 ..> UC13 : <<include>>
+UC13 ..> UC14 : <<extend>>
+UC13 ..> UC15 : <<extend>>
+
+UC17 ..> UC18 : <<include>>
+UC18 ..> UC19 : <<extend>>
+
+UC1 ..> UC4 : <<include>>
+UC5 ..> UC7 : <<extend>>
+
+note right of UC5
+  **Métricas Analizadas:**
+  - Latencia (min/max/avg/std)
+  - Throughput por gateway
+  - Congestión por ruta
+  - Distribución de estrategias
+end note
+
+note right of UC13
+  **4 Estrategias SDN:**
+  1. Round Robin
+  2. Shortest Path
+  3. Priority-Based
+  4. Load Balancing
+end note
+
+note bottom of UC16
+  **Frecuencias de muestreo:**
+  - Críticos: 1-2 segundos
+  - Normales: 5-20 segundos
+end note
+
+@enduml

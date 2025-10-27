@@ -1,0 +1,251 @@
+[
+  {
+    "config": {
+      "sensors": 15,
+      "duration": 30.1,
+      "timestamp": "2025-10-25T18:10:25.705032"
+    },
+    "performance": {
+      "total_packets": 465,
+      "throughput": 15.47,
+      "errors": 0,
+      "success_rate": 100.0
+    },
+    "latency": {
+      "min": 0.02,
+      "max": 1.33,
+      "mean": 0.1,
+      "median": 0.08,
+      "stdev": 0.1
+    },
+    "top_sensors": [
+      {
+        "id": "T1761415795637-RUI-000",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.13114213943481445
+      },
+      {
+        "id": "T1761415795637-LUZ-004",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.09291966756184895
+      },
+      {
+        "id": "T1761415795637-CAL-008",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.09088516235351562
+      },
+      {
+        "id": "T1761415795637-TRA-012",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.11807680130004883
+      },
+      {
+        "id": "T1761415795637-TEM-001",
+        "packets_sent": 30,
+        "errors": 0,
+        "avg_latency": 0.1264174779256185
+      },
+      {
+        "id": "T1761415795637-CAL-013",
+        "packets_sent": 30,
+        "errors": 0,
+        "avg_latency": 0.09224414825439453
+      },
+      {
+        "id": "T1761415795637-RUI-005",
+        "packets_sent": 30,
+        "errors": 0,
+        "avg_latency": 0.07877349853515625
+      },
+      {
+        "id": "T1761415795637-LUZ-009",
+        "packets_sent": 30,
+        "errors": 0,
+        "avg_latency": 0.11636416117350261
+      },
+      {
+        "id": "T1761415795637-RUI-010",
+        "packets_sent": 15,
+        "errors": 0,
+        "avg_latency": 0.07328987121582031
+      },
+      {
+        "id": "T1761415795637-TEM-006",
+        "packets_sent": 15,
+        "errors": 0,
+        "avg_latency": 0.10620752970377605
+      }
+    ],
+    "label": "Carga Baja (actual)"
+  },
+  {
+    "config": {
+      "sensors": 30,
+      "duration": 30.1,
+      "timestamp": "2025-10-25T18:11:10.786357"
+    },
+    "performance": {
+      "total_packets": 930,
+      "throughput": 30.93,
+      "errors": 0,
+      "success_rate": 100.0
+    },
+    "latency": {
+      "min": 0.03,
+      "max": 1.27,
+      "mean": 0.11,
+      "median": 0.09,
+      "stdev": 0.08
+    },
+    "top_sensors": [
+      {
+        "id": "T1761415840711-CAL-008",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.09774367014567058
+      },
+      {
+        "id": "T1761415840711-LUZ-024",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.09931325912475586
+      },
+      {
+        "id": "T1761415840711-RUI-020",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.10293324788411458
+      },
+      {
+        "id": "T1761415840711-TRA-012",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.10094642639160156
+      },
+      {
+        "id": "T1761415840711-TEM-016",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.10546048482259114
+      },
+      {
+        "id": "T1761415840711-LUZ-004",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.1335302988688151
+      },
+      {
+        "id": "T1761415840711-RUI-000",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.11301438013712566
+      },
+      {
+        "id": "T1761415840711-CAL-028",
+        "packets_sent": 60,
+        "errors": 0,
+        "avg_latency": 0.14307498931884766
+      },
+      {
+        "id": "T1761415840711-RUI-025",
+        "packets_sent": 30,
+        "errors": 0,
+        "avg_latency": 0.08443196614583333
+      },
+      {
+        "id": "T1761415840711-TEM-001",
+        "packets_sent": 30,
+        "errors": 0,
+        "avg_latency": 0.11167526245117188
+      }
+    ],
+    "label": "Carga Media (2x)"
+  },
+  {
+    "config": {
+      "sensors": 50,
+      "duration": 60.1,
+      "timestamp": "2025-10-25T18:12:25.964048"
+    },
+    "performance": {
+      "total_packets": 3060,
+      "throughput": 50.88,
+      "errors": 0,
+      "success_rate": 100.0
+    },
+    "latency": {
+      "min": 0.03,
+      "max": 2.05,
+      "mean": 0.12,
+      "median": 0.09,
+      "stdev": 0.09
+    },
+    "top_sensors": [
+      {
+        "id": "T1761415885806-LUZ-004",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.11172691980997722
+      },
+      {
+        "id": "T1761415885806-TEM-036",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.1326302687327067
+      },
+      {
+        "id": "T1761415885806-TRA-012",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.09619593620300293
+      },
+      {
+        "id": "T1761415885806-TRA-032",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.12123783429463704
+      },
+      {
+        "id": "T1761415885806-CAL-008",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.1399358113606771
+      },
+      {
+        "id": "T1761415885806-CAL-028",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.13276934623718262
+      },
+      {
+        "id": "T1761415885806-RUI-020",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.11144677797953288
+      },
+      {
+        "id": "T1761415885806-RUI-000",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.10724862416585286
+      },
+      {
+        "id": "T1761415885806-LUZ-024",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.11653900146484375
+      },
+      {
+        "id": "T1761415885806-RUI-040",
+        "packets_sent": 120,
+        "errors": 0,
+        "avg_latency": 0.12421806653340657
+      }
+    ],
+    "label": "Carga Alta (3.3x)"
+  }
+]

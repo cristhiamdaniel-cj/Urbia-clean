@@ -1,0 +1,130 @@
+@startuml Component Diagram
+!theme cerulean-outline
+skinparam backgroundColor #FEFEFE
+
+package "UrbIA IoT System" {
+    
+    component "Flask Web Server" as FLASK {
+        port "HTTP 5000" as HTTP
+    }
+    
+    package "API Layer" {
+        component "Sensor Routes" as SENSOR_API
+        component "Telemetry Routes" as TELEM_API
+        component "SDN Routes" as SDN_API
+    }
+    
+    package "Application Services" {
+        component "Sensor Service" as SENSOR_SVC
+        component "Telemetry Service" as TELEM_SVC
+        component "Gateway Service" as GATEWAY_SVC
+        component "SDN Controller" as SDN_CTRL
+    }
+    
+    package "Domain Core" {
+        component "Entities" as ENTITIES {
+            [Sensor]
+            [Gateway]
+            [Telemetry]
+            [Route]
+        }
+        
+        component "Routing Strategies" as STRATEGIES {
+            [Round Robin]
+            [Shortest Path]
+            [Priority-Based]
+            [Load Balancing]
+        }
+    }
+    
+    package "Infrastructure" {
+        component "Repositories" as REPOS {
+            [Sensor Repository]
+            [Gateway Repository]
+            [Telemetry Repository]
+        }
+        
+        component "Factories" as FACTORIES {
+            [Sensor Factory]
+            [Gateway Factory]
+        }
+        
+        component "SDN Analyzer" as ANALYZER
+        component "Telemetry Generator" as GEN
+    }
+    
+    database "In-Memory Storage" as DB
+    
+    component "Dashboard UI" as DASHBOARD {
+        [Leaflet Map]
+        [D3.js Graphs]
+        [Real-time Stats]
+    }
+    
+    component "DI Container" as DI
+}
+
+cloud "External Systems" {
+    [OpenStreetMap API] as OSM
+    [Docker Registry] as DOCKER
+}
+
+' Connections
+HTTP -- FLASK
+FLASK --> SENSOR_API
+FLASK --> TELEM_API
+FLASK --> SDN_API
+FLASK --> DASHBOARD
+
+SENSOR_API --> SENSOR_SVC
+TELEM_API --> TELEM_SVC
+SDN_API --> SDN_CTRL
+
+SENSOR_SVC --> ENTITIES
+SENSOR_SVC --> REPOS
+TELEM_SVC --> ENTITIES
+TELEM_SVC --> REPOS
+GATEWAY_SVC --> ENTITIES
+GATEWAY_SVC --> REPOS
+
+SDN_CTRL --> STRATEGIES
+SDN_CTRL --> ANALYZER
+
+REPOS --> DB
+FACTORIES --> ENTITIES
+GEN --> TELEM_SVC
+GEN --> SDN_CTRL
+
+DI ..> SENSOR_SVC
+DI ..> TELEM_SVC
+DI ..> GATEWAY_SVC
+DI ..> SDN_CTRL
+DI ..> REPOS
+DI ..> FACTORIES
+
+DASHBOARD --> OSM
+DOCKER ..> FLASK
+
+note right of DI
+  Dependency Injection Container
+  manages all service lifecycles
+  and wiring
+end note
+
+note right of ANALYZER
+  Real-time Analysis:
+  - Latency metrics
+  - Throughput calculation
+  - Congestion monitoring
+  - Strategy distribution
+end note
+
+note bottom of STRATEGIES
+  4 SDN Routing Strategies:
+  1. Round Robin (load distribution)
+  2. Shortest Path (low latency)
+  3. Priority-Based (QoS)
+  4. Load Balancing (adaptive)
+end note
+
+@enduml

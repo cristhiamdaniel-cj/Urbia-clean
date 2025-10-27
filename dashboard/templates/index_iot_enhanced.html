@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UrbIA IoT - Smart City Manizales</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        #map {
+            height: 400px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .telemetry-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-color);
+            transition: all 0.3s;
+        }
+        
+        .telemetry-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .telemetry-item.critical {
+            border-left-color: var(--danger-color);
+            background: #fee;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            font-weight: bold;
+            margin: 20px 0 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            height: 300px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .btn-custom {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .btn-custom:hover {
+            transform: scale(1.05);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 9999;
+            animation: slideIn 0.3s;
+            max-width: 300px;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .route-metrics {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header">
+            <h1><i class="fas fa-city"></i> UrbIA IoT - Smart City Manizales</h1>
+            <p class="text-muted">Sistema de monitoreo y control inteligente - Clean Architecture</p>
+        </div>
+
+        <!-- Botones de Acción -->
+        <div class="action-buttons">
+            <button class="btn-custom" onclick="window.open('/network-topology', '_blank')">
+                <i class="fas fa-project-diagram"></i> Ver Topología de Red
+            </button>
+            <button class="btn-custom" onclick="exportToCSV()">
+                <i class="fas fa-file-csv"></i> Exportar CSV
+            </button>
+            <button class="btn-custom" onclick="exportToExcel()">
+                <i class="fas fa-file-excel"></i> Exportar Excel
+            </button>
+            <button class="btn-custom" onclick="window.open('/api-docs', '_blank')">
+                <i class="fas fa-book"></i> API Docs
+            </button>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="section-title">
+            <i class="fas fa-chart-bar"></i> Estadísticas del Sistema
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stats-card" onclick="filterCritical()">
+                    <h3 id="critical-alerts">0</h3>
+                    <p>Alertas Críticas Hoy</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                    <h3 id="most-active">-</h3>
+                    <p>Sensor Más Activo</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stats-card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <h3 id="gateway-load">0%</h3>
+                    <p>Carga de Gateways</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mapa y Telemetría -->
+        <div class="row mt-4">
+            <div class="col-lg-7">
+                <div class="section-title">
+                    <i class="fas fa-map-marked-alt"></i> Mapa de Sensores
+                </div>
+                <div id="map"></div>
+                
+                <!-- Gráfica Histórica -->
+                <div class="section-title mt-4">
+                    <i class="fas fa-chart-line"></i> Histórico de Telemetría
+                </div>
+                <div class="chart-container">
+                    <canvas id="telemetryChart"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="section-title">
+                    <i class="fas fa-tachometer-alt"></i> Telemetría en Tiempo Real
+                </div>
+                <div id="telemetry-panel" style="max-height: 400px; overflow-y: auto;"></div>
+            </div>
+        </div>
+
+        <!-- SDN Metrics -->
+        <div class="section-title mt-4">
+            <i class="fas fa-network-wired"></i> Controlador SDN
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="route-metrics">
+                    <h4><i class="fas fa-route"></i> Ruta A (Larga)</h4>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="metric-value" id="route-a-packets">0</p>
+                            <p class="text-muted">Paquetes</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="metric-value" id="route-a-latency">0ms</p>
+                            <p class="text-muted">Latencia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="route-metrics">
+                    <h4><i class="fas fa-route"></i> Ruta B (Corta)</h4>
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="metric-value" id="route-b-packets">0</p>
+                            <p class="text-muted">Paquetes</p>
+                        </div>
+                        <div class="col-6">
+                            <p class="metric-value" id="route-b-latency">0ms</p>
+                            <p class="text-muted">Latencia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Mapa
+        const map = L.map('map').setView([5.0689, -75.5174], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        const markers = {};
+        let telemetryData = [];
+        const chartData = {
+            labels: [],
+            datasets: []
+        };
+
+        // Chart.js
+        const ctx = document.getElementById('telemetryChart').getContext('2d');
+        const telemetryChart = new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true },
+                    title: { display: true, text: 'Últimos 20 valores' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+        // Actualizar telemetría
+        function updateTelemetry() {
+            fetch('/api/telemetry/current')
+                .then(res => res.json())
+                .then(data => {
+                    telemetryData = data;
+                    const panel = document.getElementById('telemetry-panel');
+                    panel.innerHTML = '';
+                    
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'telemetry-item' + (item.is_critical ? ' critical' : '');
+                        div.innerHTML = `
+                            <strong>${item.sensor_name}</strong><br>
+                            <span style="font-size: 1.2rem;">${item.value.toFixed(2)} ${item.unit}</span>
+                            ${item.is_critical ? '<span class="badge bg-danger ms-2">CRÍTICO</span>' : ''}
+                            <br><small class="text-muted">${new Date(item.timestamp).toLocaleTimeString()}</small>
+                        `;
+                        panel.appendChild(div);
+                        
+                        // Marcador
+                        if (!markers[item.sensor_id]) {
+                            markers[item.sensor_id] = L.marker([item.location.lat, item.location.lng])
+                                .addTo(map)
+                                .bindPopup(item.sensor_name);
+                        }
+                        
+                        // Notificación crítica
+                        if (item.is_critical && !sessionStorage.getItem(`notified-${item.sensor_id}`)) {
+                            showNotification(item.sensor_name, item.value, item.unit);
+                            sessionStorage.setItem(`notified-${item.sensor_id}`, 'true');
+                        }
+                    });
+                    
+                    updateChart(data);
+                });
+        }
+
+        // Actualizar gráfica
+        function updateChart(data) {
+            const now = new Date().toLocaleTimeString();
+            chartData.labels.push(now);
+            if (chartData.labels.length > 20) chartData.labels.shift();
+            
+            data.forEach((item, i) => {
+                if (!chartData.datasets[i]) {
+                    chartData.datasets[i] = {
+                        label: item.sensor_name,
+                        data: [],
+                        borderColor: `hsl(${i * 60}, 70%, 50%)`,
+                        tension: 0.4
+                    };
+                }
+                chartData.datasets[i].data.push(item.value);
+                if (chartData.datasets[i].data.length > 20) {
+                    chartData.datasets[i].data.shift();
+                }
+            });
+            
+            telemetryChart.update();
+        }
+
+        // Notificaciones
+        function showNotification(sensor, value, unit) {
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.innerHTML = `
+                <h5 style="color: #ef4444;"><i class="fas fa-exclamation-triangle"></i> Alerta Crítica</h5>
+                <p><strong>${sensor}</strong></p>
+                <p>${value.toFixed(2)} ${unit}</p>
+            `;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 5000);
+        }
+
+        // Exportar CSV
+        function exportToCSV() {
+            let csv = 'Sensor,Valor,Unidad,Timestamp,Crítico\n';
+            telemetryData.forEach(item => {
+                csv += `${item.sensor_name},${item.value},${item.unit},${item.timestamp},${item.is_critical}\n`;
+            });
+            download(csv, 'telemetria.csv', 'text/csv');
+        }
+
+        // Exportar Excel (CSV compatible)
+        function exportToExcel() {
+            exportToCSV();
+        }
+
+        function download(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+        }
+
+        // Métricas
+        function updateMetrics() {
+            fetch('/api/metrics')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('critical-alerts').textContent = data.critical_alerts || 0;
+                    document.getElementById('most-active').textContent = 'RUIDO';
+                    document.getElementById('gateway-load').textContent = '0%';
+                    
+                    if (data.routes) {
+                        document.getElementById('route-a-packets').textContent = data.routes.route_a.packets || 0;
+                        document.getElementById('route-a-latency').textContent = (data.routes.route_a.latency || 0) + 'ms';
+                        document.getElementById('route-b-packets').textContent = data.routes.route_b.packets || 0;
+                        document.getElementById('route-b-latency').textContent = (data.routes.route_b.latency || 0) + 'ms';
+                    }
+                });
+        }
+
+        // Iniciar
+        updateTelemetry();
+        updateMetrics();
+        setInterval(updateTelemetry, 2000);
+        setInterval(updateMetrics, 3000);
+    </script>
+</body>
+</html>

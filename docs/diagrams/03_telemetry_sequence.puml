@@ -1,0 +1,82 @@
+@startuml Telemetry Processing Sequence
+!theme cerulean-outline
+skinparam backgroundColor #FEFEFE
+
+actor "IoT Sensor" as SENSOR
+participant "Telemetry\nGenerator" as GEN
+participant "SDN\nController" as SDN
+participant "Telemetry\nService" as TELEM_SVC
+participant "Telemetry\nRepository" as TELEM_REPO
+participant "SDN\nAnalyzer" as ANALYZER
+participant "Event Bus" as EVENT
+participant "Dashboard" as DASH
+
+== Telemetry Generation ==
+activate GEN
+GEN -> GEN: Generate sensor value\n(based on interval)
+GEN -> SDN: route_packet(sensor_id, value)
+activate SDN
+
+== SDN Routing Decision ==
+SDN -> SDN: Get sensor priority
+SDN -> SDN: Select routing strategy\n(Priority-Based/Round-Robin/etc)
+SDN -> SDN: Select optimal route
+SDN --> GEN: RoutingDecision(route, latency)
+deactivate SDN
+
+== Process Telemetry ==
+GEN -> TELEM_SVC: process_telemetry(sensor_id, value)
+activate TELEM_SVC
+
+TELEM_SVC -> TELEM_SVC: Create Telemetry entity
+TELEM_SVC -> TELEM_SVC: Evaluate thresholds\n(is_critical, is_warning)
+
+TELEM_SVC -> TELEM_REPO: save(telemetry)
+activate TELEM_REPO
+TELEM_REPO --> TELEM_SVC: saved
+deactivate TELEM_REPO
+
+== Record SDN Analytics ==
+TELEM_SVC -> ANALYZER: record_packet(\nsensor_id, gateway, latency, strategy)
+activate ANALYZER
+ANALYZER -> ANALYZER: Update statistics\n(avg latency, throughput, congestion)
+ANALYZER --> TELEM_SVC: recorded
+deactivate ANALYZER
+
+== Critical Alert ==
+alt is_critical == true
+    TELEM_SVC -> EVENT: publish(CriticalAlertTriggered)
+    activate EVENT
+    EVENT -> DASH: notify_critical_alert(sensor_id, value)
+    activate DASH
+    DASH -> DASH: Update alert counter
+    DASH --> EVENT: acknowledged
+    deactivate DASH
+    deactivate EVENT
+end
+
+TELEM_SVC --> GEN: processed
+deactivate TELEM_SVC
+
+== Dashboard Polling ==
+loop Every 2 seconds
+    DASH -> TELEM_SVC: get_current_telemetry()
+    activate TELEM_SVC
+    TELEM_SVC -> TELEM_REPO: find_latest_for_all_sensors()
+    activate TELEM_REPO
+    TELEM_REPO --> TELEM_SVC: telemetry_list
+    deactivate TELEM_REPO
+    TELEM_SVC --> DASH: telemetry_data
+    deactivate TELEM_SVC
+    
+    DASH -> ANALYZER: get_analysis()
+    activate ANALYZER
+    ANALYZER --> DASH: sdn_metrics
+    deactivate ANALYZER
+    
+    DASH -> DASH: Update visualizations\n(map, graphs, stats)
+end
+
+deactivate GEN
+
+@enduml

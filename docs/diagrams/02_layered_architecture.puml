@@ -1,0 +1,88 @@
+@startuml Layered Architecture
+!theme cerulean-outline
+skinparam backgroundColor #FEFEFE
+
+package "Presentation Layer" {
+    [REST API] as API
+    [Web Dashboard] as WEB
+    [CLI Tools] as CLI
+}
+
+package "Application Layer" {
+    [SensorService] as SENSOR_SVC
+    [TelemetryService] as TELEM_SVC
+    [GatewayService] as GATEWAY_SVC
+    [SDNControllerService] as SDN_SVC
+}
+
+package "Domain Layer" {
+    [Entities] as ENTITIES
+    [Value Objects] as VO
+    [Domain Services] as DOMAIN_SVC
+    [Repositories\n(Interfaces)] as REPO_INT
+}
+
+package "Infrastructure Layer" {
+    [Memory Repositories] as MEM_REPO
+    [Sensor Factories] as FACTORIES
+    [SDN Analyzer] as ANALYZER
+    [Telemetry Generator] as TELEM_GEN
+    [Adapters] as ADAPTERS
+}
+
+package "External Systems" {
+    database "In-Memory\nStorage" as DB
+    [Docker Container] as DOCKER
+}
+
+' Presentation -> Application
+API --> SENSOR_SVC
+API --> TELEM_SVC
+API --> SDN_SVC
+WEB --> SENSOR_SVC
+WEB --> TELEM_SVC
+
+' Application -> Domain
+SENSOR_SVC --> ENTITIES
+SENSOR_SVC --> REPO_INT
+TELEM_SVC --> ENTITIES
+TELEM_SVC --> REPO_INT
+GATEWAY_SVC --> ENTITIES
+GATEWAY_SVC --> REPO_INT
+SDN_SVC --> DOMAIN_SVC
+
+' Domain -> Infrastructure
+REPO_INT <|.. MEM_REPO
+ENTITIES <.. FACTORIES
+DOMAIN_SVC <.. ANALYZER
+
+' Infrastructure -> External
+MEM_REPO --> DB
+TELEM_GEN --> DB
+DOCKER ..> API
+
+note right of API
+  RESTful endpoints:
+  - /api/sensors
+  - /api/telemetry/current
+  - /api/sdn-analysis
+  - /api/events
+end note
+
+note right of DOMAIN_SVC
+  Routing Strategies:
+  - Round Robin
+  - Shortest Path
+  - Priority-Based
+  - Load Balancing
+end note
+
+note right of ANALYZER
+  Real-time metrics:
+  - Latency (min/max/avg/std)
+  - Throughput per gateway
+  - Congestion per route
+  - Strategy distribution
+end note
+
+@enduml

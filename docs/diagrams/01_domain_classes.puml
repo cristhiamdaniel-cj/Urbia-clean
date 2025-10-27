@@ -1,0 +1,156 @@
+@startuml Domain Layer - Class Diagram
+!theme cerulean-outline
+skinparam backgroundColor #FEFEFE
+skinparam handwritten false
+
+package "Domain Layer" {
+    
+    package "Entities" {
+        class Sensor {
+            - id: SensorId
+            - name: str
+            - type: str
+            - location: Location
+            - priority: Priority
+            - unit: str
+            - min_value: float
+            - max_value: float
+            - status: str
+            + __init__(id, name, type, location, priority, unit, min_value, max_value)
+            + is_active(): bool
+            + to_dict(): dict
+        }
+        
+        class Gateway {
+            - id: str
+            - name: str
+            - location: Location
+            - sensors: List[Sensor]
+            - capacity: int
+            + __init__(id, name, location, capacity)
+            + add_sensor(sensor: Sensor): void
+            + remove_sensor(sensor_id: str): void
+            + get_sensor_count(): int
+            + is_at_capacity(): bool
+        }
+        
+        class Telemetry {
+            - sensor_id: str
+            - value: float
+            - timestamp: datetime
+            - unit: str
+            - is_critical: bool
+            - is_warning: bool
+            + __init__(sensor_id, value, timestamp, unit)
+            + evaluate_thresholds(sensor: Sensor): void
+        }
+        
+        class Route {
+            - id: str
+            - name: str
+            - latency: float
+            - capacity: int
+            - current_load: int
+            + __init__(id, name, latency, capacity)
+            + is_congested(): bool
+            + get_utilization(): float
+        }
+        
+        class RoutingDecision {
+            - sensor_id: str
+            - selected_route: str
+            - strategy: str
+            - priority: str
+            - latency: float
+            - timestamp: datetime
+            + __init__(sensor_id, selected_route, strategy, priority, latency)
+        }
+    }
+    
+    package "Value Objects" {
+        class Location <<ValueObject>> {
+            - lat: float
+            - lng: float
+            - city: str
+            + __init__(lat, lng, city)
+            + validate(): void
+            + distance_to(other: Location): float
+            + __eq__(other): bool
+        }
+        
+        class Priority <<ValueObject>> {
+            <<enumeration>>
+            CRITICAL
+            HIGH
+            NORMAL
+            LOW
+        }
+        
+        class SensorId <<ValueObject>> {
+            - value: str
+            + __init__(value)
+            + validate(): void
+            + __str__(): str
+        }
+    }
+    
+    package "Repositories (Interfaces)" {
+        interface SensorRepository {
+            + save(sensor: Sensor): void
+            + find_by_id(sensor_id: str): Optional[Sensor]
+            + find_all(): List[Sensor]
+            + delete(sensor_id: str): void
+        }
+        
+        interface GatewayRepository {
+            + save(gateway: Gateway): void
+            + find_by_id(gateway_id: str): Optional[Gateway]
+            + find_all(): List[Gateway]
+        }
+        
+        interface TelemetryRepository {
+            + save(telemetry: Telemetry): void
+            + find_by_sensor(sensor_id: str): List[Telemetry]
+            + find_latest(sensor_id: str): Optional[Telemetry]
+        }
+    }
+    
+    package "Domain Services" {
+        class RoutingStrategy {
+            <<interface>>
+            + select_route(sensor: Sensor, routes: List[Route]): Route
+        }
+        
+        class RoundRobinStrategy {
+            - current_index: int
+            + select_route(sensor: Sensor, routes: List[Route]): Route
+        }
+        
+        class ShortestPathStrategy {
+            + select_route(sensor: Sensor, routes: List[Route]): Route
+        }
+        
+        class PriorityBasedStrategy {
+            + select_route(sensor: Sensor, routes: List[Route]): Route
+        }
+        
+        class LoadBalancingStrategy {
+            + select_route(sensor: Sensor, routes: List[Route]): Route
+        }
+    }
+}
+
+' Relaciones
+Sensor *-- SensorId
+Sensor *-- Location
+Sensor *-- Priority
+Gateway *-- Location
+Gateway o-- "0..*" Sensor
+Telemetry ..> Sensor
+
+RoutingStrategy <|.. RoundRobinStrategy
+RoutingStrategy <|.. ShortestPathStrategy
+RoutingStrategy <|.. PriorityBasedStrategy
+RoutingStrategy <|.. LoadBalancingStrategy
+
+@enduml

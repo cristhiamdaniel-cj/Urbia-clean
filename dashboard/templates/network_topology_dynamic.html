@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>🌐 Topología de Red SDN - 15 Sensores</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #0a0e27;
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: #4a5568;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+        #topology {
+            width: 100%;
+            height: 700px;
+            background: #1a1f3a;
+            border-radius: 10px;
+            border: 2px solid #4a5568;
+        }
+        .node {
+            cursor: pointer;
+        }
+        .node text {
+            font-size: 12px;
+            text-anchor: middle;
+            fill: white;
+            pointer-events: none;
+        }
+        .link {
+            stroke: #4a5568;
+            stroke-width: 2px;
+            fill: none;
+        }
+        .link.critical {
+            stroke: #ef4444;
+            stroke-width: 3px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .legend {
+            position: absolute;
+            top: 80px;
+            right: 40px;
+            background: rgba(26, 31, 58, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .stats {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        .stat-card {
+            background: #1a1f3a;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-btn">← Volver al Dashboard</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🌐 Topología de Red SDN - Sistema Completo</h1>
+            <p>15 Sensores IoT conectados a 2 Gateways Edge a través del Controlador SDN</p>
+        </div>
+        
+        <div class="legend">
+            <h3>Leyenda</h3>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ef4444;"></div>
+                <span>Sensores IoT</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #10b981;"></div>
+                <span>Gateways Edge</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f59e0b;"></div>
+                <span>Controlador SDN</span>
+            </div>
+            <div class="legend-item">
+                <div style="width: 20px; height: 2px; background: #4a5568; margin-right: 10px;"></div>
+                <span>Paquetes Normal</span>
+            </div>
+            <div class="legend-item">
+                <div style="width: 20px; height: 2px; background: #ef4444; margin-right: 10px;"></div>
+                <span>Paquetes Crítico</span>
+            </div>
+        </div>
+        
+        <svg id="topology"></svg>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div>Total Sensores</div>
+                <div class="stat-value" id="totalSensors">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Gateways Activos</div>
+                <div class="stat-value">2</div>
+            </div>
+            <div class="stat-card">
+                <div>Paquetes/seg</div>
+                <div class="stat-value" id="packetsPerSec">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Latencia Promedio</div>
+                <div class="stat-value" id="avgLatency">0ms</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const svg = d3.select("#topology");
+        const width = svg.node().getBoundingClientRect().width;
+        const height = 700;
+        
+        svg.attr("viewBox", `0 0 ${width} ${height}`);
+        
+        // Cargar sensores desde la API
+        fetch('/api/sensors')
+            .then(r => r.json())
+            .then(sensors => {
+                document.getElementById('totalSensors').textContent = sensors.length;
+                drawTopology(sensors);
+            });
+        
+        // Actualizar métricas
+        setInterval(() => {
+            fetch('/api/sdn-analysis')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('packetsPerSec').textContent = data.total_throughput.toFixed(0);
+                    document.getElementById('avgLatency').textContent = data.avg_latency.toFixed(1) + 'ms';
+                });
+        }, 1000);
+        
+        function drawTopology(sensors) {
+            // Nodos
+            const nodes = [
+                { id: 'controller', type: 'controller', label: 'SDN Controller', x: width/2, y: 150 },
+                { id: 'gw-norte', type: 'gateway', label: 'Gateway Norte', x: width/3, y: 300 },
+                { id: 'gw-sur', type: 'gateway', label: 'Gateway Sur', x: 2*width/3, y: 300 }
+            ];
+            
+            // Agregar sensores en círculos alrededor de los gateways
+            const sensorsPerGateway = Math.ceil(sensors.length / 2);
+            sensors.forEach((sensor, i) => {
+                const isNorth = i < sensorsPerGateway;
+                const gateway = isNorth ? { x: width/3, y: 300 } : { x: 2*width/3, y: 300 };
+                const angle = (i % sensorsPerGateway) * (2 * Math.PI / sensorsPerGateway);
+                const radius = 180;
+                
+                nodes.push({
+                    id: sensor.id,
+                    type: 'sensor',
+                    label: sensor.id,
+                    x: gateway.x + radius * Math.cos(angle),
+                    y: gateway.y + radius * Math.sin(angle),
+                    sensorType: sensor.type
+                });
+            });
+            
+            // Enlaces
+            const links = [
+                { source: 'controller', target: 'gw-norte' },
+                { source: 'controller', target: 'gw-sur' }
+            ];
+            
+            sensors.forEach((sensor, i) => {
+                const gateway = i < sensorsPerGateway ? 'gw-norte' : 'gw-sur';
+                links.push({ source: sensor.id, target: gateway });
+            });
+            
+            // Dibujar enlaces
+            svg.selectAll(".link")
+                .data(links)
+                .enter()
+                .append("line")
+                .attr("class", "link")
+                .attr("x1", d => nodes.find(n => n.id === d.source).x)
+                .attr("y1", d => nodes.find(n => n.id === d.source).y)
+                .attr("x2", d => nodes.find(n => n.id === d.target).x)
+                .attr("y2", d => nodes.find(n => n.id === d.target).y);
+            
+            // Dibujar nodos
+            const nodeGroups = svg.selectAll(".node")
+                .data(nodes)
+                .enter()
+                .append("g")
+                .attr("class", "node")
+                .attr("transform", d => `translate(${d.x}, ${d.y})`);
+            
+            nodeGroups.append("circle")
+                .attr("r", d => d.type === 'controller' ? 30 : d.type === 'gateway' ? 25 : 15)
+                .attr("fill", d => {
+                    if (d.type === 'controller') return '#f59e0b';
+                    if (d.type === 'gateway') return '#10b981';
+                    return '#ef4444';
+                })
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2);
+            
+            nodeGroups.append("text")
+                .attr("dy", d => d.type === 'sensor' ? 25 : -35)
+                .text(d => d.label)
+                .style("font-size", d => d.type === 'sensor' ? '10px' : '12px');
+            
+            // Animación de paquetes
+            setInterval(() => animatePackets(), 2000);
+        }
+        
+        function animatePackets() {
+            const links = svg.selectAll(".link");
+            const randomLink = links.nodes()[Math.floor(Math.random() * links.size())];
+            
+            if (randomLink) {
+                d3.select(randomLink)
+                    .classed("critical", Math.random() > 0.7)
+                    .transition()
+                    .duration(2000)
+                    .on("end", function() {
+                        d3.select(this).classed("critical", false);
+                    });
+            }
+        }
+    </script>
+</body>
+</html>

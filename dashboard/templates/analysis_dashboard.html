@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>📊 Análisis Matemático SDN - Tesis Doctoral</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            font-family: 'Arial', sans-serif;
+        }
+        .container-fluid {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .metric-value {
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .metric-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .chart-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid #6c5ce7;
+        }
+        .congestion-indicator {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .low { background: #00b894; }
+        .medium { background: #fdcb6e; }
+        .high { background: #d63031; }
+        .sensor-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .sensor-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border-left: 5px solid #6c5ce7;
+            background: #f1f3f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-chart-line"></i> Análisis Matemático del SDN</h1>
+            <a href="/" class="btn btn-primary">← Dashboard Principal</a>
+        </div>
+
+        <!-- MÉTRICAS PRINCIPALES -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">Latencia Promedio</div>
+                    <div class="metric-value" id="avgLatency">0 ms</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">Throughput Total</div>
+                    <div class="metric-value" id="totalThroughput">0 pkt/s</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">Paquetes en Cola</div>
+                    <div class="metric-value" id="queueSize">0</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="metric-card">
+                    <div class="metric-label">% Congestión</div>
+                    <div class="metric-value" id="congestionPct">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRÁFICOS -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5>📈 Latencia en Tiempo Real (últimos 30 seg)</h5>
+                    <canvas id="latencyChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5>📊 Throughput por Gateway</h5>
+                    <canvas id="throughputChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5>🎯 Distribución de Estrategias SDN</h5>
+                    <canvas id="strategyChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5>🚦 Estado de Congestión por Ruta</h5>
+                    <div id="congestionStatus"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LISTA DE SENSORES -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h5>📡 Estado de Sensores (Intervalos de Envío)</h5>
+                    <div class="sensor-list" id="sensorList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ANÁLISIS ESTADÍSTICO -->
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="chart-container">
+                    <h5>📐 Análisis Estadístico</h5>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>Mín</th>
+                                <th>Máx</th>
+                                <th>Media</th>
+                                <th>Desv. Est.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        // Configuración de gráficos
+        const latencyData = {
+            labels: [],
+            datasets: [{
+                label: 'Latencia (ms)',
+                data: [],
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4
+            }]
+        };
+
+        const latencyChart = new Chart(document.getElementById('latencyChart'), {
+            type: 'line',
+            data: latencyData,
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Latencia (ms)' } },
+                    x: { title: { display: true, text: 'Tiempo' } }
+                }
+            }
+        });
+
+        const throughputChart = new Chart(document.getElementById('throughputChart'), {
+            type: 'bar',
+            data: {
+                labels: ['GW-Norte', 'GW-Sur'],
+                datasets: [{
+                    label: 'Paquetes/seg',
+                    data: [0, 0],
+                    backgroundColor: ['#00b894', '#fdcb6e']
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        const strategyChart = new Chart(document.getElementById('strategyChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Round Robin', 'Prioridad', 'Balance', 'Shortest Path'],
+                datasets: [{
+                    data: [0, 0, 0, 0],
+                    backgroundColor: ['#6c5ce7', '#00b894', '#fdcb6e', '#d63031']
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // Actualizar datos cada segundo
+        let timeCounter = 0;
+        setInterval(updateMetrics, 1000);
+
+        function updateMetrics() {
+            fetch('/api/sdn-analysis')
+                .then(r => r.json())
+                .then(data => {
+                    // Métricas principales
+                    document.getElementById('avgLatency').textContent = data.avg_latency.toFixed(2) + ' ms';
+                    document.getElementById('totalThroughput').textContent = data.total_throughput.toFixed(1) + ' pkt/s';
+                    document.getElementById('queueSize').textContent = data.queue_size;
+                    document.getElementById('congestionPct').textContent = data.congestion_pct.toFixed(1) + '%';
+
+                    // Gráfico de latencia
+                    if (latencyData.labels.length > 30) {
+                        latencyData.labels.shift();
+                        latencyData.datasets[0].data.shift();
+                    }
+                    latencyData.labels.push(timeCounter++);
+                    latencyData.datasets[0].data.push(data.avg_latency);
+                    latencyChart.update();
+
+                    // Throughput por gateway
+                    throughputChart.data.datasets[0].data = [
+                        data.throughput_north,
+                        data.throughput_south
+                    ];
+                    throughputChart.update();
+
+                    // Estrategias
+                    strategyChart.data.datasets[0].data = data.strategy_distribution;
+                    strategyChart.update();
+
+                    // Congestión
+                    updateCongestion(data.congestion_status);
+
+                    // Lista de sensores
+                    updateSensorList(data.sensors);
+
+                    // Estadísticas
+                    updateStats(data.stats);
+                });
+        }
+
+        function updateCongestion(status) {
+            const html = Object.entries(status).map(([route, level]) => {
+                const color = level < 30 ? 'low' : level < 70 ? 'medium' : 'high';
+                return `<div class="sensor-item">
+                    <span class="congestion-indicator ${color}"></span>
+                    <strong>${route}:</strong> ${level.toFixed(1)}% carga
+                </div>`;
+            }).join('');
+            document.getElementById('congestionStatus').innerHTML = html;
+        }
+
+        function updateSensorList(sensors) {
+            const html = sensors.map(s => `
+                <div class="sensor-item">
+                    <strong>${s.id}</strong> (${s.type}) - 
+                    Intervalo: ${s.interval}s - 
+                    Últimos ${s.packets_sent} paquetes - 
+                    Latencia: ${s.latency.toFixed(2)}ms
+                </div>
+            `).join('');
+            document.getElementById('sensorList').innerHTML = html;
+        }
+
+        function updateStats(stats) {
+            const html = `
+                <tr>
+                    <td><strong>Latencia</strong></td>
+                    <td>${stats.latency.min.toFixed(2)} ms</td>
+                    <td>${stats.latency.max.toFixed(2)} ms</td>
+                    <td>${stats.latency.mean.toFixed(2)} ms</td>
+                    <td>${stats.latency.std.toFixed(2)} ms</td>
+                </tr>
+                <tr>
+                    <td><strong>Throughput</strong></td>
+                    <td>${stats.throughput.min.toFixed(1)} pkt/s</td>
+                    <td>${stats.throughput.max.toFixed(1)} pkt/s</td>
+                    <td>${stats.throughput.mean.toFixed(1)} pkt/s</td>
+                    <td>${stats.throughput.std.toFixed(1)} pkt/s</td>
+                </tr>
+            `;
+            document.getElementById('statsTable').innerHTML = html;
+        }
+
+        // Iniciar actualizaciones
+        updateMetrics();
+    </script>
+</body>
+</html>

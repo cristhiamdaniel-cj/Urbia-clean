@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  urbia:
+    build: .
+    container_name: urbia-clean
+    command: ["python", "src/presentation/web/dashboard_app.py"]
+    ports:
+      - "5001:5000"  # Puerto externo 5001
+      - "6654:6653"
+    volumes:
+      - ./logs:/app/logs
+      - ./results:/app/results
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    networks:
+      - urbia-net
+    restart: unless-stopped
+
+networks:
+  urbia-net:
+    driver: bridge

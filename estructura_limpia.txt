@@ -1,0 +1,165 @@
+.
+├── ARCHITECTURE_DETAILED.md
+├── ARCHITECTURE_SUMMARY.md
+├── config
+│   ├── di_container.py
+│   ├── sensors_advanced.json
+│   └── settings.py
+├── dashboard
+│   └── templates
+│       ├── admin_panel.html
+│       ├── analysis_dashboard.html
+│       ├── api_documentation.html
+│       ├── components
+│       ├── index_iot_dynamic.html
+│       ├── index_iot_dynamic_lines.html
+│       ├── index_iot_enhanced.html
+│       ├── index_iot_filtered.html
+│       ├── index_iot_vertical.html
+│       ├── network_topology_dynamic.html
+│       ├── network_topology_explained.html
+│       └── network_topology.html
+├── docker-compose.yml
+├── Dockerfile
+├── docs
+│   └── diagrams
+│       ├── 01_domain_classes.puml
+│       ├── 02_layered_architecture.puml
+│       ├── 03_telemetry_sequence.puml
+│       ├── 04_component_diagram.puml
+│       ├── 05_deployment_diagram.puml
+│       ├── 06_use_cases.puml
+│       ├── Component Diagram.png
+│       ├── Deployment Diagram.png
+│       ├── Domain Layer - Class Diagram.png
+│       ├── Layered Architecture.png
+│       ├── Telemetry Processing Sequence.png
+│       └── Use Cases Diagram.png
+├── estructura_limpia.txt
+├── init_gateways.py
+├── project_structure.txt
+├── pytest.ini
+├── results
+│   ├── 01_throughput_comparison.png
+│   ├── 02_latency_analysis.png
+│   ├── 03_scalability.png
+│   ├── 04_success_rate.png
+│   ├── 05_executive_summary.png
+│   ├── 06_sdn_latency_comparison.png
+│   ├── 07_sdn_latency_distribution.png
+│   ├── 08_sdn_metrics_comparison.png
+│   ├── 09_sdn_route_distribution.png
+│   ├── 10_sdn_executive_summary.png
+│   ├── charts
+│   │   ├── 01_throughput_comparison.png
+│   │   ├── 02_latency_analysis.png
+│   │   ├── 03_scalability.png
+│   │   ├── 04_success_rate.png
+│   │   ├── 05_executive_summary.png
+│   │   ├── 06_sdn_latency_comparison.png
+│   │   ├── 07_sdn_latency_distribution.png
+│   │   ├── 08_sdn_metrics_comparison.png
+│   │   ├── 09_sdn_route_distribution.png
+│   │   └── 10_sdn_executive_summary.png
+│   ├── load_test_results.json
+│   └── sdn_strategy_comparison.json
+├── run_tests.sh
+├── sensors
+│   ├── locations
+│   │   └── manizales_sensors.py
+│   ├── sensor_manager.py
+│   ├── sensor_types
+│   │   ├── air_quality_sensor.py
+│   │   ├── base_sensor.py
+│   │   ├── light_sensor.py
+│   │   ├── noise_sensor.py
+│   │   ├── temperature_sensor.py
+│   │   └── traffic_sensor.py
+│   └── traffic_generator.py
+├── src
+│   ├── application
+│   │   ├── dto
+│   │   │   ├── sensor_dto.py
+│   │   │   └── telemetry_dto.py
+│   │   ├── services
+│   │   │   ├── gateway_service.py
+│   │   │   ├── sdn_controller_service.py
+│   │   │   ├── sensor_service.py
+│   │   │   └── telemetry_service.py
+│   │   └── use_cases
+│   ├── domain
+│   │   ├── entities
+│   │   │   ├── gateway.py
+│   │   │   ├── route.py
+│   │   │   ├── routing_decision.py
+│   │   │   ├── sensor.py
+│   │   │   └── telemetry.py
+│   │   ├── repositories
+│   │   │   ├── gateway_repository.py
+│   │   │   ├── sensor_repository.py
+│   │   │   └── telemetry_repository.py
+│   │   ├── services
+│   │   │   ├── gateway_service.py
+│   │   │   └── routing_strategy.py
+│   │   └── value_objects
+│   │       ├── location.py
+│   │       ├── priority.py
+│   │       └── sensor_id.py
+│   ├── infrastructure
+│   │   ├── adapters
+│   │   │   └── legacy_sensor_adapter.py
+│   │   ├── analysis
+│   │   │   └── sdn_analyzer.py
+│   │   ├── factories
+│   │   │   ├── gateway_factory.py
+│   │   │   └── sensor_factory.py
+│   │   ├── logging
+│   │   ├── network
+│   │   ├── persistence
+│   │   │   ├── advanced_sensor_loader.py
+│   │   │   ├── memory_gateway_repository.py
+│   │   │   ├── memory_sensor_repository.py
+│   │   │   ├── memory_telemetry_repository.py
+│   │   │   └── sensor_loader.py
+│   │   └── telemetry
+│   ├── presentation
+│   │   ├── api
+│   │   │   └── routes
+│   │   │       ├── sensor_routes.py
+│   │   │       └── telemetry_routes.py
+│   │   ├── cli
+│   │   └── web
+│   │       └── dashboard_app.py
+│   └── shared
+│       ├── events
+│       │   ├── event_bus.py
+│       │   ├── events.py
+│       │   └── gateway_events.py
+│       ├── exceptions
+│       │   └── domain_exceptions.py
+│       └── utils
+├── start_sensors.py
+├── start.sh
+├── tests
+│   ├── conftest.py
+│   ├── integration
+│   │   └── test_api_endpoints.py
+│   ├── performance
+│   │   ├── generate_charts_fixed.py
+│   │   ├── generate_charts.py
+│   │   ├── load_test_clean.py
+│   │   ├── load_test_fixed.py
+│   │   ├── load_test.py
+│   │   ├── sdn_strategy_comparison_fixed.py
+│   │   ├── sdn_strategy_comparison.py
+│   │   └── visualize_sdn_comparison.py
+│   └── unit
+│       ├── test_sdn_controller.py
+│       ├── test_sensor_factory.py
+│       ├── test_sensor_service.py
+│       └── test_telemetry_service.py
+├── verify_phase3.py
+├── verify_phase4.py
+└── verify_phase5.py
+
+43 directories, 120 files

@@ -1,0 +1,94 @@
+[
+  {
+    "strategy": "round_robin",
+    "duration": 30.1,
+    "total_packets": 675,
+    "throughput": 22.44,
+    "critical_packets": 180,
+    "high_packets": 180,
+    "normal_packets": 315,
+    "latency": {
+      "min": 0.018,
+      "max": 1.67,
+      "mean": 0.109,
+      "median": 0.088,
+      "p95": 0.226,
+      "stdev": 0.097
+    },
+    "route_distribution": {
+      "Ruta B (Corta)": 247,
+      "Ruta A (Larga)": 428
+    },
+    "errors": 0,
+    "success_rate": 100.0
+  },
+  {
+    "strategy": "shortest_path",
+    "duration": 30.1,
+    "total_packets": 675,
+    "throughput": 22.44,
+    "critical_packets": 180,
+    "high_packets": 180,
+    "normal_packets": 315,
+    "latency": {
+      "min": 0.041,
+      "max": 1.002,
+      "mean": 0.115,
+      "median": 0.093,
+      "p95": 0.245,
+      "stdev": 0.084
+    },
+    "route_distribution": {
+      "Ruta B (Corta)": 247,
+      "Ruta A (Larga)": 428
+    },
+    "errors": 0,
+    "success_rate": 100.0
+  },
+  {
+    "strategy": "priority_based",
+    "duration": 30.1,
+    "total_packets": 675,
+    "throughput": 22.44,
+    "critical_packets": 180,
+    "high_packets": 180,
+    "normal_packets": 315,
+    "latency": {
+      "min": 0.039,
+      "max": 1.885,
+      "mean": 0.119,
+      "median": 0.097,
+      "p95": 0.248,
+      "stdev": 0.099
+    },
+    "route_distribution": {
+      "Ruta B (Corta)": 247,
+      "Ruta A (Larga)": 428
+    },
+    "errors": 0,
+    "success_rate": 100.0
+  },
+  {
+    "strategy": "load_balancing",
+    "duration": 30.1,
+    "total_packets": 675,
+    "throughput": 22.44,
+    "critical_packets": 180,
+    "high_packets": 180,
+    "normal_packets": 315,
+    "latency": {
+      "min": 0.038,
+      "max": 1.553,
+      "mean": 0.128,
+      "median": 0.098,
+      "p95": 0.285,
+      "stdev": 0.103
+    },
+    "route_distribution": {
+      "Ruta B (Corta)": 246,
+      "Ruta A (Larga)": 429
+    },
+    "errors": 0,
+    "success_rate": 100.0
+  }
+]

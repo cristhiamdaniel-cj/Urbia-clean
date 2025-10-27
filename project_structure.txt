@@ -1,0 +1,148 @@
+.
+├── config
+│   ├── di_container.py
+│   ├── __init__.py
+│   ├── sensors_advanced.json
+│   └── settings.py
+├── dashboard
+│   └── templates
+│       ├── components
+│       ├── admin_panel.html
+│       ├── analysis_dashboard.html
+│       ├── api_documentation.html
+│       ├── index_iot_dynamic.html
+│       ├── index_iot_dynamic_lines.html
+│       ├── index_iot_enhanced.html
+│       ├── index_iot_filtered.html
+│       ├── index_iot_vertical.html
+│       ├── network_topology_dynamic.html
+│       ├── network_topology_explained.html
+│       └── network_topology.html
+├── logs
+├── results
+├── sensors
+│   ├── locations
+│   │   ├── __init__.py
+│   │   └── manizales_sensors.py
+│   ├── sensor_types
+│   │   ├── air_quality_sensor.py
+│   │   ├── base_sensor.py
+│   │   ├── __init__.py
+│   │   ├── light_sensor.py
+│   │   ├── noise_sensor.py
+│   │   ├── temperature_sensor.py
+│   │   └── traffic_sensor.py
+│   ├── __init__.py
+│   ├── sensor_manager.py
+│   └── traffic_generator.py
+├── src
+│   ├── application
+│   │   ├── dto
+│   │   │   ├── __init__.py
+│   │   │   ├── sensor_dto.py
+│   │   │   └── telemetry_dto.py
+│   │   ├── services
+│   │   │   ├── gateway_service.py
+│   │   │   ├── __init__.py
+│   │   │   ├── sdn_controller_service.py
+│   │   │   ├── sensor_service.py
+│   │   │   └── telemetry_service.py
+│   │   ├── use_cases
+│   │   │   └── __init__.py
+│   │   └── __init__.py
+│   ├── domain
+│   │   ├── entities
+│   │   │   ├── gateway.py
+│   │   │   ├── __init__.py
+│   │   │   ├── route.py
+│   │   │   ├── routing_decision.py
+│   │   │   ├── sensor.py
+│   │   │   └── telemetry.py
+│   │   ├── repositories
+│   │   │   ├── gateway_repository.py
+│   │   │   ├── __init__.py
+│   │   │   ├── sensor_repository.py
+│   │   │   └── telemetry_repository.py
+│   │   ├── services
+│   │   │   ├── gateway_service.py
+│   │   │   ├── __init__.py
+│   │   │   └── routing_strategy.py
+│   │   ├── value_objects
+│   │   │   ├── __init__.py
+│   │   │   ├── location.py
+│   │   │   ├── priority.py
+│   │   │   └── sensor_id.py
+│   │   └── __init__.py
+│   ├── infrastructure
+│   │   ├── adapters
+│   │   │   ├── __init__.py
+│   │   │   └── legacy_sensor_adapter.py
+│   │   ├── analysis
+│   │   │   ├── __init__.py
+│   │   │   └── sdn_analyzer.py
+│   │   ├── factories
+│   │   │   ├── gateway_factory.py
+│   │   │   ├── __init__.py
+│   │   │   └── sensor_factory.py
+│   │   ├── logging
+│   │   │   └── __init__.py
+│   │   ├── network
+│   │   │   └── __init__.py
+│   │   ├── persistence
+│   │   │   ├── advanced_sensor_loader.py
+│   │   │   ├── __init__.py
+│   │   │   ├── memory_gateway_repository.py
+│   │   │   ├── memory_sensor_repository.py
+│   │   │   ├── memory_telemetry_repository.py
+│   │   │   └── sensor_loader.py
+│   │   ├── telemetry
+│   │   └── __init__.py
+│   ├── presentation
+│   │   ├── api
+│   │   │   ├── routes
+│   │   │   └── __init__.py
+│   │   ├── cli
+│   │   │   └── __init__.py
+│   │   ├── web
+│   │   │   ├── dashboard_app.py
+│   │   │   └── __init__.py
+│   │   └── __init__.py
+│   ├── shared
+│   │   ├── events
+│   │   │   ├── event_bus.py
+│   │   │   ├── events.py
+│   │   │   ├── gateway_events.py
+│   │   │   └── __init__.py
+│   │   ├── exceptions
+│   │   │   ├── domain_exceptions.py
+│   │   │   └── __init__.py
+│   │   ├── utils
+│   │   │   └── __init__.py
+│   │   └── __init__.py
+│   └── __init__.py
+├── tests
+│   ├── integration
+│   │   ├── __init__.py
+│   │   └── test_api_endpoints.py
+│   ├── unit
+│   │   ├── __init__.py
+│   │   ├── test_sdn_controller.py
+│   │   ├── test_sensor_factory.py
+│   │   ├── test_sensor_service.py
+│   │   └── test_telemetry_service.py
+│   ├── conftest.py
+│   └── __init__.py
+├── ARCHITECTURE_SUMMARY.md
+├── docker-compose.yml
+├── Dockerfile
+├── init_gateways.py
+├── project_structure.txt
+├── pytest.ini
+├── run_tests.sh
+├── start_sensors.py
+├── start.sh
+├── verify_phase3.py
+├── verify_phase4.py
+└── verify_phase5.py
+
+40 directories, 106 files

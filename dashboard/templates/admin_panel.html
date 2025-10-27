@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - UrbIA IoT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .admin-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        .sensor-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            background: #f8f9fa;
+            transition: transform 0.3s;
+        }
+        .sensor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .badge {
+            padding: 5px 10px;
+            margin: 0 5px;
+        }
+        .form-section {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .sensors-section {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-cog"></i> Panel de Administración</h1>
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Volver al Dashboard
+            </a>
+        </div>
+
+        <div class="form-section">
+            <h4 class="text-primary"><i class="fas fa-plus-circle"></i> Agregar Nuevo Sensor</h4>
+            <form id="sensorForm" class="row g-3 mt-3">
+                <div class="col-md-4">
+                    <label class="form-label">ID del Sensor</label>
+                    <input type="text" class="form-control" id="sensorId" placeholder="TEMP-002">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Nombre</label>
+                    <input type="text" class="form-control" id="sensorName" placeholder="Sensor de Temperatura">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-select" id="sensorType">
+                        <option value="Temperatura">Temperatura</option>
+                        <option value="RUIDO">Ruido</option>
+                        <option value="TRAFICO">Tráfico</option>
+                        <option value="CALIDAD_AIRE">Calidad del Aire</option>
+                        <option value="LUZ">Iluminación</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Latitud</label>
+                    <input type="number" step="0.0001" class="form-control" id="sensorLat" placeholder="5.0689">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Longitud</label>
+                    <input type="number" step="0.0001" class="form-control" id="sensorLng" placeholder="-75.5174">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Prioridad</label>
+                    <select class="form-select" id="sensorPriority">
+                        <option value="Crítica">Crítica</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Normal" selected>Normal</option>
+                        <option value="Baja">Baja</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-plus"></i> Agregar Sensor
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="sensors-section">
+            <h4 class="text-success"><i class="fas fa-list"></i> Sensores Registrados</h4>
+            <div id="sensorsList" class="mt-3">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando sensores...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Cargar sensores al iniciar
+        loadSensors();
+
+        // Recargar cada 5 segundos
+        setInterval(loadSensors, 5000);
+
+        function loadSensors() {
+            fetch('/api/sensors')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al cargar sensores');
+                    }
+                    return response.json();
+                })
+                .then(sensors => {
+                    const container = document.getElementById('sensorsList');
+                    
+                    if (sensors.length === 0) {
+                        container.innerHTML = '<p class="text-muted">No hay sensores registrados</p>';
+                        return;
+                    }
+                    
+                    container.innerHTML = '';
+                    
+                    sensors.forEach(sensor => {
+                        const statusBadge = sensor.is_active 
+                            ? '<span class="badge bg-success">Activo</span>' 
+                            : '<span class="badge bg-secondary">Inactivo</span>';
+                        
+                        const criticalBadge = sensor.current_telemetry && sensor.current_telemetry.is_critical
+                            ? '<span class="badge bg-danger">CRÍTICO</span>'
+                            : '<span class="badge bg-info">Normal</span>';
+                        
+                        const currentValue = sensor.current_telemetry 
+                            ? `${sensor.current_telemetry.value.toFixed(2)} ${sensor.unit}`
+                            : 'Sin datos';
+                        
+                        const card = document.createElement('div');
+                        card.className = 'sensor-card';
+                        card.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5>
+                                        <i class="fas fa-broadcast-tower text-primary"></i>
+                                        ${sensor.name}
+                                    </h5>
+                                    <p class="mb-2">
+                                        <span class="badge bg-primary">${sensor.id}</span>
+                                        <span class="badge bg-info">${sensor.type}</span>
+                                        ${statusBadge}
+                                        ${criticalBadge}
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Ubicación:</strong> 
+                                        <i class="fas fa-map-marker-alt text-danger"></i> 
+                                        ${sensor.location.lat}, ${sensor.location.lng} 
+                                        (${sensor.location.city})
+                                    </p>
+                                    <p class="mb-1">
+                                        <strong>Prioridad:</strong> 
+                                        <span class="badge bg-warning text-dark">${sensor.priority}</span>
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>Última lectura:</strong> ${currentValue}
+                                        ${sensor.current_telemetry ? 
+                                            `<small class="text-muted">(${new Date(sensor.current_telemetry.timestamp).toLocaleString()})</small>` 
+                                            : ''}
+                                    </p>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-warning me-2" onclick="editSensor('${sensor.id}')">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteSensor('${sensor.id}')">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        container.appendChild(card);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('sensorsList').innerHTML = 
+                        `<div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Error al cargar sensores: ${error.message}
+                        </div>`;
+                });
+        }
+
+        function editSensor(sensorId) {
+            alert('Funcionalidad de edición en desarrollo para sensor: ' + sensorId);
+        }
+
+        function deleteSensor(sensorId) {
+            if (confirm('¿Estás seguro de eliminar el sensor ' + sensorId + '?')) {
+                alert('Funcionalidad de eliminación en desarrollo para sensor: ' + sensorId);
+            }
+        }
+
+        // Manejo del formulario
+        document.getElementById('sensorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Funcionalidad de agregar sensor en desarrollo');
+        });
+    </script>
+</body>
+</html>

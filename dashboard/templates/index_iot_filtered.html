@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏙️ UrbIA IoT - Smart City Manizales</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .main-container {
+            display: flex;
+            height: 100vh;
+            padding: 10px;
+            gap: 10px;
+        }
+        
+        .map-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 15px;
+            padding: 15px 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #667eea;
+        }
+        
+        .header p {
+            margin: 5px 0 0 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .btn-custom {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-topology { background: #667eea; }
+        .btn-analysis { background: #10b981; }
+        .btn-docs { background: #f59e0b; }
+        .btn-admin { background: #ef4444; }
+        
+        .filters {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 5px;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #6b7280;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .filter-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+        
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .filter-btn .count {
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .toggle-connections {
+            margin-left: auto;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid #10b981;
+            background: #10b981;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-connections:hover {
+            background: #059669;
+            border-color: #059669;
+        }
+        
+        .toggle-connections.off {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        
+        .map-container {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .sidebar {
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        
+        .card h3 {
+            margin: 0 0 15px 0;
+            font-size: 18px;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-box.blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stat-box.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; }
+        .stat-box.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .stat-box.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .telemetry-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .telemetry-item {
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .telemetry-item.normal { background: #e0f2fe; border-left: 4px solid #0ea5e9; }
+        .telemetry-item.warning { background: #fef3c7; border-left: 4px solid #f59e0b; }
+        .telemetry-item.critical { background: #fee2e2; border-left: 4px solid #ef4444; }
+        
+        .telemetry-name {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .telemetry-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .telemetry-unit {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .routes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .route-item {
+            padding: 12px;
+            border-radius: 8px;
+            background: #f3f4f6;
+        }
+        
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .route-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .route-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .route-badge.critical { background: #ef4444; color: white; }
+        .route-badge.normal { background: #10b981; color: white; }
+        
+        .route-details {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        @keyframes pulse-gateway {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .gateway-pulse {
+            animation: pulse-gateway 2s infinite;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- MAPA (IZQUIERDA) -->
+        <div class="map-section">
+            <div class="header">
+                <h1><i class="fas fa-city"></i> UrbIA IoT - Smart City Manizales</h1>
+                <p>Sistema con visualización dinámica y filtros interactivos</p>
+                <div class="buttons">
+                    <button class="btn-custom btn-topology" onclick="window.location.href='/network-topology'">
+                        <i class="fas fa-project-diagram"></i> Topología 3D
+                    </button>
+                    <button class="btn-custom btn-analysis" onclick="window.location.href='/analysis'">
+                        <i class="fas fa-chart-line"></i> Análisis Matemático
+                    </button>
+                    <button class="btn-custom btn-docs" onclick="window.location.href='/api-docs'">
+                        <i class="fas fa-book"></i> API Docs
+                    </button>
+                    <button class="btn-custom btn-admin" onclick="window.location.href='/admin'">
+                        <i class="fas fa-cog"></i> Admin
+                    </button>
+                </div>
+            </div>
+            
+            <!-- FILTROS -->
+            <div class="filters">
+                <span class="filter-label"><i class="fas fa-filter"></i> Filtrar por tipo:</span>
+                <button class="filter-btn active" data-type="ALL" onclick="filterSensors('ALL')">
+                    <i class="fas fa-globe"></i> Todos <span class="count" id="count-all">0</span>
+                </button>
+                <button class="filter-btn" data-type="RUIDO" onclick="filterSensors('RUIDO')">
+                    <i class="fas fa-volume-up"></i> Ruido <span class="count" id="count-ruido">0</span>
+                </button>
+                <button class="filter-btn" data-type="TEMPERATURA" onclick="filterSensors('TEMPERATURA')">
+                    <i class="fas fa-thermometer-half"></i> Temp. <span class="count" id="count-temp">0</span>
+                </button>
+                <button class="filter-btn" data-type="TRAFICO" onclick="filterSensors('TRAFICO')">
+                    <i class="fas fa-car"></i> Tráfico <span class="count" id="count-trafico">0</span>
+                </button>
+                <button class="filter-btn" data-type="CALIDAD_AIRE" onclick="filterSensors('CALIDAD_AIRE')">
+                    <i class="fas fa-wind"></i> Aire <span class="count" id="count-aire">0</span>
+                </button>
+                <button class="filter-btn" data-type="LUZ" onclick="filterSensors('LUZ')">
+                    <i class="fas fa-lightbulb"></i> Luz <span class="count" id="count-luz">0</span>
+                </button>
+                
+                <button class="toggle-connections" id="toggleConnections" onclick="toggleConnections()">
+                    <i class="fas fa-link"></i> Mostrar Conexiones
+                </button>
+            </div>
+            
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+        </div>
+        
+        <!-- COLUMNA DE DATOS (DERECHA) -->
+        <div class="sidebar">
+            <!-- ESTADÍSTICAS -->
+            <div class="card">
+                <h3><i class="fas fa-chart-bar"></i> Estadísticas del Sistema</h3>
+                <div class="stat-grid">
+                    <div class="stat-box blue">
+                        <div class="stat-label">Total Sensores</div>
+                        <div class="stat-value" id="totalSensors">0</div>
+                    </div>
+                    <div class="stat-box green">
+                        <div class="stat-label">Activos</div>
+                        <div class="stat-value" id="activeSensors">0</div>
+                    </div>
+                    <div class="stat-box orange">
+                        <div class="stat-label">Alertas</div>
+                        <div class="stat-value" id="criticalAlerts">0</div>
+                    </div>
+                    <div class="stat-box red">
+                        <div class="stat-label">Paquetes/seg</div>
+                        <div class="stat-value" id="packetsPerSec">0</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TELEMETRÍA EN TIEMPO REAL -->
+            <div class="card">
+                <h3><i class="fas fa-signal"></i> Telemetría en Tiempo Real</h3>
+                <div class="telemetry-list" id="telemetryList">
+                    <p style="text-align: center; color: #999;">Cargando datos...</p>
+                </div>
+            </div>
+            
+            <!-- RUTAS SDN ACTIVAS -->
+            <div class="card">
+                <h3><i class="fas fa-route"></i> Rutas SDN Activas</h3>
+                <div class="routes-list" id="routesList">
+                    <p style="text-align: center; color: #999;">Cargando rutas...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([5.0703, -75.5138], 13);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+        
+        let sensors = [];
+        let markers = {};
+        let lines = [];
+        let currentFilter = 'ALL';
+        let showConnections = true;
+        
+        const gateways = {
+            'GW-Norte': { lat: 5.0750, lng: -75.5100, name: 'Gateway Norte' },
+            'GW-Sur': { lat: 5.0550, lng: -75.4900, name: 'Gateway Sur' }
+        };
+        
+        // Agregar gateways
+        Object.entries(gateways).forEach(([id, gw]) => {
+            const icon = L.divIcon({
+                html: `<div class="gateway-pulse" style="background: #10b981; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px;">GW</div>`,
+                className: '',
+                iconSize: [24, 24]
+            });
+            
+            L.marker([gw.lat, gw.lng], { icon })
+                .bindPopup(`<b>${gw.name}</b><br>Gateway Edge<br>Estado: Activo`)
+                .addTo(map);
+        });
+        
+        function loadSensors() {
+            fetch('/api/sensors')
+                .then(r => r.json())
+                .then(data => {
+                    sensors = data;
+                    updateCounts();
+                    updateMap();
+                    updateStats();
+                });
+        }
+        
+        function updateCounts() {
+            const counts = {
+                'RUIDO': 0,
+                'TEMPERATURA': 0,
+                'TRAFICO': 0,
+                'CALIDAD_AIRE': 0,
+                'LUZ': 0
+            };
+            
+            sensors.forEach(s => {
+                if (counts[s.type] !== undefined) counts[s.type]++;
+            });
+            
+            document.getElementById('count-all').textContent = sensors.length;
+            document.getElementById('count-ruido').textContent = counts['RUIDO'];
+            document.getElementById('count-temp').textContent = counts['TEMPERATURA'];
+            document.getElementById('count-trafico').textContent = counts['TRAFICO'];
+            document.getElementById('count-aire').textContent = counts['CALIDAD_AIRE'];
+            document.getElementById('count-luz').textContent = counts['LUZ'];
+        }
+        
+        function filterSensors(type) {
+            currentFilter = type;
+            
+            // Actualizar botones
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.filter-btn').classList.add('active');
+            
+            updateMap();
+        }
+        
+        function toggleConnections() {
+            showConnections = !showConnections;
+            const btn = document.getElementById('toggleConnections');
+            
+            if (showConnections) {
+                btn.classList.remove('off');
+                btn.innerHTML = '<i class="fas fa-link"></i> Ocultar Conexiones';
+            } else {
+                btn.classList.add('off');
+                btn.innerHTML = '<i class="fas fa-unlink"></i> Mostrar Conexiones';
+            }
+            
+            updateMap();
+        }
+        
+        function updateMap() {
+            // Limpiar
+            Object.values(markers).forEach(m => map.removeLayer(m));
+            lines.forEach(l => map.removeLayer(l));
+            markers = {};
+            lines = [];
+            
+            const filteredSensors = currentFilter === 'ALL' ? 
+                sensors : 
+                sensors.filter(s => s.type === currentFilter);
+            
+            filteredSensors.forEach((sensor, index) => {
+                const color = sensor.priority === 'CRITICAL' ? '#ef4444' : 
+                             sensor.priority === 'HIGH' ? '#f59e0b' : 
+                             sensor.priority === 'NORMAL' ? '#3b82f6' : '#10b981';
+                
+                const icon = L.divIcon({
+                    html: `<div style="background: ${color}; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>`,
+                    className: '',
+                    iconSize: [16, 16]
+                });
+                
+                const marker = L.marker([sensor.location.lat, sensor.location.lng], { icon })
+                    .bindPopup(`<b>${sensor.name}</b><br>${sensor.type}<br>Prioridad: ${sensor.priority}`)
+                    .addTo(map);
+                
+                markers[sensor.id] = marker;
+                
+                // Líneas
+                if (showConnections) {
+                    const sensorIndex = sensors.indexOf(sensor);
+                    const gateway = sensorIndex < Math.ceil(sensors.length / 2) ? gateways['GW-Norte'] : gateways['GW-Sur'];
+                    const lineColor = sensor.priority === 'CRITICAL' ? '#ef4444' : '#667eea';
+                    
+                    const line = L.polyline(
+                        [[sensor.location.lat, sensor.location.lng], [gateway.lat, gateway.lng]],
+                        { color: lineColor, weight: 2, opacity: 0.6, dashArray: '5, 10' }
+                    ).addTo(map);
+                    
+                    lines.push(line);
+                }
+            });
+            
+            if (showConnections && lines.length > 0) {
+                animateActiveLines();
+            }
+        }
+        
+        function animateActiveLines() {
+            const numToAnimate = Math.min(5, lines.length);
+            for (let i = 0; i < numToAnimate; i++) {
+                const randomIndex = Math.floor(Math.random() * lines.length);
+                const line = lines[randomIndex];
+                
+                line.setStyle({ weight: 4, opacity: 1, color: '#10b981' });
+                
+                setTimeout(() => {
+                    line.setStyle({ weight: 2, opacity: 0.6 });
+                }, 1000);
+            }
+        }
+        
+        function updateStats() {
+            fetch('/api/metrics')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('totalSensors').textContent = data.total_sensors;
+                    document.getElementById('activeSensors').textContent = data.active_sensors;
+                    document.getElementById('criticalAlerts').textContent = data.critical_alerts;
+                });
+            
+            fetch('/api/sdn-analysis')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('packetsPerSec').textContent = Math.round(data.total_throughput);
+                })
+                .catch(() => {});
+        }
+        
+        function updateTelemetry() {
+            fetch('/api/telemetry/current')
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('telemetryList');
+                    if (data.length === 0) {
+                        list.innerHTML = '<p style="text-align: center; color: #999;">Sin datos</p>';
+                        return;
+                    }
+                    
+                    list.innerHTML = data.slice(0, 8).map(t => {
+                        const status = t.is_critical ? 'critical' : t.is_warning ? 'warning' : 'normal';
+                        return `
+                            <div class="telemetry-item ${status}">
+                                <div>
+                                    <div class="telemetry-name">${t.sensor_name || t.sensor_id}</div>
+                                    <div style="font-size: 11px; color: #666;">${new Date(t.timestamp).toLocaleTimeString()}</div>
+                                </div>
+                                <div>
+                                    <span class="telemetry-value">${t.value.toFixed(1)}</span>
+                                    <span class="telemetry-unit">${t.unit}</span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                });
+        }
+        
+        function updateRoutes() {
+            fetch('/api/events')
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('routesList');
+                    if (data.length === 0) {
+                        list.innerHTML = '<p style="text-align: center; color: #999;">Sin rutas activas</p>';
+                        return;
+                    }
+                    
+                    list.innerHTML = data.slice(0, 6).map(event => {
+                        const isCritical = event.type.includes('CRITICA') || event.type.includes('CRITICAL');
+                        return `
+                            <div class="route-item">
+                                <div class="route-header">
+                                    <span class="route-name">${event.sensor}</span>
+                                    <span class="route-badge ${isCritical ? 'critical' : 'normal'}">
+                                        ${isCritical ? 'CRÍTICO' : 'NORMAL'}
+                                    </span>
+                                </div>
+                                <div class="route-details">
+                                    ${event.action} • ${event.latency}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                });
+        }
+        
+        loadSensors();
+        
+        setInterval(() => {
+            loadSensors();
+            updateTelemetry();
+            updateRoutes();
+            if (showConnections && lines.length > 0) {
+                animateActiveLines();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>
