@@ -388,33 +388,12 @@ class DLMSSensorAdapter:
         
         min_val, max_val = NORMAL_RANGES[sensor_type]
         
-        # FRECUENCIA: manejo específico para frecuencia
-        if sensor_type == SensorTypeDLMS.FRECUENCIA:
-            if value < 47.0 or value > 54.9:
-                return "BAD"   # Crítico: muy bajo o muy alto
-            elif value < 49.0 or value > 51.0:
-                return "UNCERTAIN"  # Cuestionable: fuera del rango normal
-            else:
-                return "GOOD"  # Normal: dentro del rango óptimo
-
-        # FACTOR_POTENCIA: validación específica para factor de potencia
-        elif sensor_type == SensorTypeDLMS.FACTOR_POTENCIA:
-            if value < 0.2:  # Muy bajo = crítico
-                return "BAD"
-            elif value < 0.5:  # Bajo = cuestionable
-                return "UNCERTAIN"
-            elif value < 0.7:  # Medio-bajo = cuestionable pero aceptable
-                return "UNCERTAIN"
-            else:  # Medio-alto y alto = bueno
-                return "GOOD"
-
-        # Para otros sensores: lógica general de rangos
         # Si el valor está dentro del rango normal
         if min_val <= value <= max_val:
             return "GOOD"
         
-        # Si está moderadamente fuera del rango (85% del rango normal)
-        if (min_val * 0.85 <= value < min_val) or (max_val < value <= max_val * 1.15):
+        # Si está moderadamente fuera del rango
+        if min_val * 0.85 <= value <= max_val * 1.15:
             return "UNCERTAIN"
         
         # Fuera del rango aceptable
@@ -434,12 +413,9 @@ class DLMSSensorAdapter:
         if sensor_type not in NORMAL_RANGES:
             return False
         
-        # FRECUENCIA: crítico si está fuera de 49-51 Hz
-        if sensor_type == SensorTypeDLMS.FRECUENCIA:
-            return value < 49.0 or value > 51.0
-        
-        # Para otros sensores: valores críticos 10% fuera del rango normal
         min_val, max_val = NORMAL_RANGES[sensor_type]
+        
+        # Valores críticos: 10% fuera del rango normal
         critical_threshold_low = min_val * 0.9
         critical_threshold_high = max_val * 1.1
         

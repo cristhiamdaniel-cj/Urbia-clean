@@ -85,7 +85,7 @@ class DLMSDataExtractor:
     
     def __init__(self, config: SyncConfiguration):
         self.config = config
-        self.connection = None
+        self.connection = None  # CORRECCIÓN: Inicializar como None para tests
         
     async def connect(self):
         """Establecer conexión con PostgreSQL de ThingsBoard"""
@@ -108,6 +108,7 @@ class DLMSDataExtractor:
         """Cerrar conexión con PostgreSQL"""
         if self.connection:
             self.connection.close()
+            self.connection = None  # CORRECCIÓN: Resetear a None
             logger.info("Conexión cerrada con PostgreSQL de ThingsBoard")
     
     def get_partition_list(self) -> List[str]:
@@ -219,8 +220,15 @@ class DLMSDataExtractor:
         """Determinar tipo de datos DLMS basado en la clave"""
         key_lower = key.lower()
         
-        if 'energy' in key_lower:
-            return DLMSDataType.ACTIVE_ENERGY if 'active' in key_lower else DLMSDataType.REACTIVE_ENERGY
+        # CORRECCIÓN: Mejorar detección de tipos de energía
+        if 'reactive_energy' in key_lower or 'reactive energy' in key_lower or 'varh' in key_lower:
+            return DLMSDataType.REACTIVE_ENERGY
+        elif 'active_energy' in key_lower or 'active energy' in key_lower or 'kwh' in key_lower:
+            return DLMSDataType.ACTIVE_ENERGY
+        elif 'energy' in key_lower:
+            # Si contiene 'energy' pero no es específicamente reactive o active, 
+            # asumir por defecto active_energy
+            return DLMSDataType.ACTIVE_ENERGY
         elif 'power' in key_lower:
             return DLMSDataType.POWER
         elif 'voltage' in key_lower:

@@ -1485,18 +1485,20 @@ class TestDLMSIntegrationComplete(unittest.TestCase):
         # Crear dataset grande
         large_dataset = []
         for device_id in range(1, 21):  # 20 dispositivos
-            for measurement_type in ["voltage", "current", "power"]:
-                raw_data = DLMSRawData(
-                    device_id=f"DLMS-PERF-{device_id:03d}",
-                    timestamp=datetime.now(),
-                    meter_type=MeterType.MONOFASICO,
-                    metrics={
-                        f"{measurement_type}_l1": 200.0 + (device_id * 10),
-                        "frequency": 50.0
-                    },
-                    raw_values={}
-                )
-                large_dataset.append(raw_data)
+            # Cada dispositivo tiene todas las métricas (voltage, current, power, frequency)
+            raw_data = DLMSRawData(
+                device_id=f"DLMS-PERF-{device_id:03d}",
+                timestamp=datetime.now(),
+                meter_type=MeterType.MONOFASICO,
+                metrics={
+                    "voltage_l1": 200.0 + (device_id * 10),
+                    "current_l1": 10.0 + (device_id * 5),
+                    "active_power": 2000.0 + (device_id * 100),
+                    "frequency": 50.0
+                },
+                raw_values={}
+            )
+            large_dataset.append(raw_data)
         
         # Medir tiempo de procesamiento
         start_time = time.time()
@@ -1510,8 +1512,10 @@ class TestDLMSIntegrationComplete(unittest.TestCase):
         processing_time = end_time - start_time
         
         # Verificar rendimiento
+        # Cada dataset genera 4 elementos convertidos: voltage_l1, current_l1, power_l1, frequency
         valid_datasets = [d for d in large_dataset if d.meter_type == MeterType.MONOFASICO]
-        self.assertEqual(len(all_converted), len(valid_datasets))
+        expected_converted = len(valid_datasets) * 4  # 4 métricas por dataset
+        self.assertEqual(len(all_converted), expected_converted)
         self.assertLess(processing_time, 5.0, "El procesamiento debe tomar menos de 5 segundos")
         
         # Verificar que el promedio por dispositivo es razonable

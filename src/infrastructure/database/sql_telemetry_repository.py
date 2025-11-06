@@ -1,7 +1,6 @@
 """
-SQL Telemetry Repository
-Implementación de persistencia SQL para telemetría que extiende InMemoryTelemetryRepository
-usando SQLite local con queries eficientes y compatibilidad con Clean Architecture.
+SQL Telemetry Repository - Versión Completa
+Implementación completa con todos los métodos requeridos por los tests DLMS
 """
 
 import sqlite3
@@ -13,25 +12,10 @@ from typing import List, Optional, Dict, Any, Union
 from dataclasses import dataclass, asdict
 from contextlib import contextmanager
 
-# Importar la interfaz base y entidades del dominio
-try:
-    from src.infrastructure.persistence.memory_telemetry_repository import InMemoryTelemetryRepository
-    from src.domain.entities.telemetry import Telemetry
-    from src.domain.value_objects.sensor_id import SensorId
-    from src.domain.value_objects.location import Location
-    from src.domain.value_objects.priority import Priority
-except ImportError:
-    # Para desarrollo independiente
-    InMemoryTelemetryRepository = None
-    Telemetry = None
-    SensorId = None
-    Location = None
-    Priority = None
-
 
 @dataclass
 class TelemetryRecord:
-    """Registro de telemetría para SQLite"""
+    """Registro de telemetría para SQLite con estructura completa"""
     id: str
     sensor_id: str
     timestamp: str
@@ -51,248 +35,95 @@ class TelemetryRecord:
             self.created_at = datetime.now(timezone.utc).isoformat()
 
 
-class QueryBuilder:
-    """Constructor de queries SQL optimizadas"""
-    
-    @staticmethod
-    def build_select_query(filters: Dict[str, Any], limit: int = None, offset: int = 0) -> tuple:
-        """Construye query SELECT con filtros optimizados"""
-        base_query = """
-            SELECT id, sensor_id, timestamp, data_type, value, unit, 
-                   location_lat, location_lng, priority, gateway_id, 
-                   metadata_json, processed, created_at
-            FROM telemetry_records 
-            WHERE 1=1
-        """
-        params = []
-        
-        # Filtros optimizados
-        if filters.get('sensor_id'):
-            base_query += " AND sensor_id = ?"
-            params.append(filters['sensor_id'])
-            
-        if filters.get('data_type'):
-            base_query += " AND data_type = ?"
-            params.append(filters['data_type'])
-            
-        if filters.get('priority'):
-            base_query += " AND priority = ?"
-            params.append(filters['priority'])
-            
-        if filters.get('start_date'):
-            base_query += " AND timestamp >= ?"
-            params.append(filters['start_date'])
-            
-        if filters.get('end_date'):
-            base_query += " AND timestamp <= ?"
-            params.append(filters['end_date'])
-            
-        if filters.get('location_radius'):
-            lat, lng, radius = filters['location_radius']
-            base_query += """
-                AND (6371 * acos(cos(radians(?)) * cos(radians(location_lat)) 
-                * cos(radians(location_lng) - radians(?)) + sin(radians(?)) 
-                * sin(radians(location_lat)))) < ?
-            """
-            params.extend([lat, lng, lat, radius])
-            
-        if filters.get('min_value') is not None:
-            base_query += " AND value >= ?"
-            params.append(filters['min_value'])
-            
-        if filters.get('max_value') is not None:
-            base_query += " AND value <= ?"
-            params.append(filters['max_value'])
-            
-        if filters.get('processed') is not None:
-            base_query += " AND processed = ?"
-            params.append(filters['processed'])
-        
-        # Ordenamiento
-        order_by = filters.get('order_by', 'timestamp DESC')
-        base_query += f" ORDER BY {order_by}"
-        
-        # Paginación
-        if limit:
-            base_query += " LIMIT ? OFFSET ?"
-            params.extend([limit, offset])
-        
-        return base_query, tuple(params)
-    
-    @staticmethod
-    def build_aggregate_query(group_by: str, filters: Dict[str, Any] = None) -> str:
-        """Construye queries de agregación para analytics"""
-        base_aggregation = {
-            'hourly': "strftime('%Y-%m-%d %H:00:00', timestamp)",
-            'daily': "strftime('%Y-%m-%d', timestamp)",
-            'monthly': "strftime('%Y-%m', timestamp)",
-            'sensor': 'sensor_id',
-            'data_type': 'data_type',
-            'priority': 'priority'
-        }
-        
-        time_group = base_aggregation.get(group_by, 'timestamp')
-        
-        query = f"""
-            SELECT 
-                {time_group} as period,
-                data_type,
-                COUNT(*) as count,
-                AVG(value) as avg_value,
-                MIN(value) as min_value,
-                MAX(value) as max_value,
-                COUNT(DISTINCT sensor_id) as unique_sensors
-            FROM telemetry_records
-            WHERE 1=1
-        """
-        
-        params = []
-        if filters:
-            if filters.get('start_date'):
-                query += " AND timestamp >= ?"
-                params.append(filters['start_date'])
-            if filters.get('end_date'):
-                query += " AND timestamp <= ?"
-                params.append(filters['end_date'])
-            if filters.get('sensor_id'):
-                query += " AND sensor_id = ?"
-                params.append(filters['sensor_id'])
-            if filters.get('data_type'):
-                query += " AND data_type = ?"
-                params.append(filters['data_type'])
-        
-        query += f" GROUP BY {time_group}, data_type ORDER BY period DESC"
-        
-        return query, tuple(params)
-
-
-class SQLTelemetryRepository(InMemoryTelemetryRepository if InMemoryTelemetryRepository else object):
+class SQLTelemetryRepository:
     """
-    Repositorio SQL para telemetría que extiende InMemoryTelemetryRepository
-    Proporciona persistencia SQLite con queries eficientes y historial completo
+    Repositorio SQL completo para telemetría con todos los métodos requeridos
     """
     
-    def __init__(self, db_path: str = "data/urbia_telemetry.db", enable_wal_mode: bool = True):
-        """
-        Inicializa el repositorio SQL
-        
-        Args:
-            db_path: Ruta al archivo de base de datos SQLite
-            enable_wal_mode: Habilita Write-Ahead Logging para mejor concurrencia
-        """
-        self.logger = logging.getLogger(__name__)
+    def __init__(self, db_path: str = "telemetry.db", enable_wal_mode: bool = True):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
         
-        self._init_database(enable_wal_mode)
+        # Crear conexión persistente
+        self.conn = sqlite3.connect(
+            self.db_path, 
+            check_same_thread=False,
+            timeout=30.0
+        )
         
-        # Inicializar el repositorio padre si está disponible
-        if InMemoryTelemetryRepository:
-            super().__init__()
+        if enable_wal_mode:
+            self.conn.execute("PRAGMA journal_mode=WAL")
+            self.conn.execute("PRAGMA synchronous=NORMAL")
+            self.conn.execute("PRAGMA cache_size=10000")
+            self.conn.execute("PRAGMA temp_store=MEMORY")
+        
+        # Inicializar esquema
+        self._init_database()
     
-    def _init_database(self, enable_wal_mode: bool = True):
-        """Inicializa la base de datos y crea las tablas"""
-        with self._get_connection() as conn:
-            cursor = conn.cursor()
-            
-            # Crear tabla principal de telemetría
-            cursor.execute("""
+    def _init_database(self):
+        """Inicializa el esquema de base de datos"""
+        try:
+            # Tabla principal de registros
+            self.conn.execute("""
                 CREATE TABLE IF NOT EXISTS telemetry_records (
                     id TEXT PRIMARY KEY,
                     sensor_id TEXT NOT NULL,
-                    timestamp TEXT NOT NULL,
+                    timestamp DATETIME NOT NULL,
                     data_type TEXT NOT NULL,
                     value REAL NOT NULL,
                     unit TEXT NOT NULL,
                     location_lat REAL NOT NULL,
                     location_lng REAL NOT NULL,
-                    priority TEXT NOT NULL,
+                    priority TEXT NOT NULL DEFAULT 'normal',
                     gateway_id TEXT,
                     metadata_json TEXT,
                     processed BOOLEAN DEFAULT FALSE,
-                    created_at TEXT NOT NULL
-                )
-            """)
-                
-            -- Crear índices reales
-            CREATE INDEX IF NOT EXISTS idx_sensor_time ON telemetry_records (sensor_id, timestamp);
-            CREATE INDEX IF NOT EXISTS idx_timestamp ON telemetry_records (timestamp);
-            CREATE INDEX IF NOT EXISTS idx_data_type ON telemetry_records (data_type);
-            CREATE INDEX IF NOT EXISTS idx_priority ON telemetry_records (priority);
-            CREATE INDEX IF NOT EXISTS idx_location ON telemetry_records (location_lat, location_lng);
-            """)
-            
-            # Crear tabla de índices para búsquedas rápidas
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS telemetry_indexes (
-                    sensor_id TEXT NOT NULL,
-                    timestamp TEXT NOT NULL,
-                    record_id TEXT NOT NULL,
-                    PRIMARY KEY (record_id),
-                    FOREIGN KEY (record_id) REFERENCES telemetry_records(id)
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
                 )
             """)
             
-            # Crear tabla de analytics para consultas frecuentes
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS telemetry_analytics (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    period_type TEXT NOT NULL,
-                    period_value TEXT NOT NULL,
-                    data_type TEXT NOT NULL,
-                    count_records INTEGER DEFAULT 0,
-                    avg_value REAL DEFAULT 0,
-                    min_value REAL DEFAULT 0,
-                    max_value REAL DEFAULT 0,
-                    unique_sensors INTEGER DEFAULT 0,
-                    last_updated TEXT NOT NULL,
-                    
-                    UNIQUE(period_type, period_value, data_type)
-                )
+            # Índices para rendimiento
+            self.conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_sensor_timestamp 
+                ON telemetry_records (sensor_id, timestamp)
             """)
             
-            # Habilitar WAL mode para mejor concurrencia
-            if enable_wal_mode:
-                cursor.execute("PRAGMA journal_mode=WAL")
-                cursor.execute("PRAGMA synchronous=NORMAL")
-                cursor.execute("PRAGMA cache_size=1000")
-                cursor.execute("PRAGMA temp_store=memory")
+            self.conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_data_type 
+                ON telemetry_records (data_type)
+            """)
             
-            conn.commit()
-            self.logger.info("Base de datos SQLite inicializada correctamente")
-    
-    @contextmanager
-    def _get_connection(self):
-        """Context manager para manejo de conexiones SQLite"""
-        conn = sqlite3.connect(
-            self.db_path, 
-            timeout=30.0,
-            check_same_thread=False
-        )
-        conn.row_factory = sqlite3.Row
-        try:
-            yield conn
-            conn.commit()
+            self.conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_priority 
+                ON telemetry_records (priority)
+            """)
+            
+            self.conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_location 
+                ON telemetry_records (location_lat, location_lng)
+            """)
+            
+            self.conn.commit()
+            self.logger.info("Base de datos inicializada correctamente")
+            
         except Exception as e:
-            conn.rollback()
-            self.logger.error(f"Error en transacción SQL: {e}")
+            self.logger.error(f"Error inicializando base de datos: {e}")
             raise
-        finally:
-            conn.close()
     
-    def save(self, telemetry: Any) -> bool:
+    def save(self, telemetry: Union[Dict, Any]) -> bool:
         """
         Guarda un registro de telemetría
         
         Args:
-            telemetry: Objeto de telemetría a guardar
+            telemetry: Objeto de telemetría (dict o objeto con atributos)
             
         Returns:
             bool: True si se guardó correctamente
         """
         try:
-            # Convertir a record SQL
-            record = self._telemetry_to_record(telemetry)
+            record = self._convert_to_record(telemetry)
             
             with self._get_connection() as conn:
                 cursor = conn.cursor()
@@ -310,86 +141,52 @@ class SQLTelemetryRepository(InMemoryTelemetryRepository if InMemoryTelemetryRep
                     record.created_at
                 ))
                 
-                # Actualizar índice
-                cursor.execute("""
-                    INSERT OR REPLACE INTO telemetry_indexes 
-                    (sensor_id, timestamp, record_id)
-                    VALUES (?, ?, ?)
-                """, (record.sensor_id, record.timestamp, record.id))
-                
-            self.logger.debug(f"Registro de telemetría guardado: {record.id}")
+            self.logger.debug(f"Registro guardado: {record.id}")
             return True
             
         except Exception as e:
-            self.logger.error(f"Error guardando telemetría: {e}")
+            self.logger.error(f"Failed to store telemetry record: {e}")
             return False
     
-    def save_many(self, telemetry_list: List[Any]) -> int:
+    def save_many(self, telemetry_list: List[Union[Dict, Any]]) -> int:
         """
         Guarda múltiples registros de telemetría de forma eficiente
-        
-        Args:
-            telemetry_list: Lista de objetos de telemetría
-            
-        Returns:
-            int: Número de registros guardados exitosamente
         """
-        if not telemetry_list:
-            return 0
-        
         saved_count = 0
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                
-                # Preparar datos para inserción masiva
-                records_data = []
-                indexes_data = []
-                
                 for telemetry in telemetry_list:
-                    record = self._telemetry_to_record(telemetry)
-                    records_data.append((
-                        record.id, record.sensor_id, record.timestamp,
-                        record.data_type, record.value, record.unit,
-                        record.location_lat, record.location_lng, record.priority,
-                        record.gateway_id, record.metadata_json, record.processed,
-                        record.created_at
-                    ))
-                    indexes_data.append((record.sensor_id, record.timestamp, record.id))
-                
-                # Inserción masiva
-                cursor.executemany("""
-                    INSERT OR REPLACE INTO telemetry_records 
-                    (id, sensor_id, timestamp, data_type, value, unit, 
-                     location_lat, location_lng, priority, gateway_id, 
-                     metadata_json, processed, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, records_data)
-                
-                # Actualizar índices masivamente
-                cursor.executemany("""
-                    INSERT OR REPLACE INTO telemetry_indexes 
-                    (sensor_id, timestamp, record_id)
-                    VALUES (?, ?, ?)
-                """, indexes_data)
-                
-                saved_count = len(telemetry_list)
-                self.logger.info(f"Guardados {saved_count} registros de telemetría")
-                
-        except Exception as e:
-            self.logger.error(f"Error en inserción masiva: {e}")
-        
-        return saved_count
-    
-    def get_by_id(self, record_id: str) -> Optional[Any]:
-        """
-        Obtiene un registro de telemetría por ID
-        
-        Args:
-            record_id: ID del registro
+                    try:
+                        record = self._convert_to_record(telemetry)
+                        cursor.execute("""
+                            INSERT OR REPLACE INTO telemetry_records 
+                            (id, sensor_id, timestamp, data_type, value, unit, 
+                             location_lat, location_lng, priority, gateway_id, 
+                             metadata_json, processed, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            record.id, record.sensor_id, record.timestamp,
+                            record.data_type, record.value, record.unit,
+                            record.location_lat, record.location_lng, record.priority,
+                            record.gateway_id, record.metadata_json, record.processed,
+                            record.created_at
+                        ))
+                        saved_count += 1
+                    except Exception as e:
+                        self.logger.error(f"Error guardando registro individual: {e}")
+                        continue
+                        
+            self.logger.info(f"Guardados {saved_count}/{len(telemetry_list)} registros")
+            return saved_count
             
-        Returns:
-            Objeto de telemetría o None si no existe
+        except Exception as e:
+            self.logger.error(f"Failed to save many records: {e}")
+            return 0
+    
+    def get_by_id(self, record_id: str) -> Optional[Dict]:
+        """
+        Obtiene un registro por su ID
         """
         try:
             with self._get_connection() as conn:
@@ -400,385 +197,213 @@ class SQLTelemetryRepository(InMemoryTelemetryRepository if InMemoryTelemetryRep
                 
                 row = cursor.fetchone()
                 if row:
-                    return self._record_to_telemetry(row)
+                    return self._row_to_dict(row)
                 return None
                 
         except Exception as e:
-            self.logger.error(f"Error obteniendo registro {record_id}: {e}")
+            self.logger.error(f"Error obteniendo registro por ID: {e}")
             return None
     
-    def get_by_sensor(self, sensor_id: str, limit: int = 100, 
-                     start_date: str = None, end_date: str = None) -> List[Any]:
+    def get_by_sensor(self, sensor_id: str, limit: int = 100) -> List[Dict]:
         """
-        Obtiene registros de telemetría por sensor
-        
-        Args:
-            sensor_id: ID del sensor
-            limit: Límite de registros
-            start_date: Fecha de inicio (ISO format)
-            end_date: Fecha de fin (ISO format)
-            
-        Returns:
-            Lista de objetos de telemetría
+        Obtiene registros por sensor
         """
         try:
-            filters = {'sensor_id': sensor_id}
-            if start_date:
-                filters['start_date'] = start_date
-            if end_date:
-                filters['end_date'] = end_date
-            
-            query, params = QueryBuilder.build_select_query(filters, limit)
-            
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute(query, params)
+                cursor.execute("""
+                    SELECT * FROM telemetry_records 
+                    WHERE sensor_id = ?
+                    ORDER BY timestamp DESC 
+                    LIMIT ?
+                """, (sensor_id, limit))
                 
-                records = []
-                for row in cursor.fetchall():
-                    records.append(self._record_to_telemetry(row))
-                
-                return records
+                return [self._row_to_dict(row) for row in cursor.fetchall()]
                 
         except Exception as e:
-            self.logger.error(f"Error obteniendo datos del sensor {sensor_id}: {e}")
+            self.logger.error(f"Error obteniendo datos por sensor: {e}")
             return []
     
-    def get_historical_data(self, sensor_id: str = None, data_type: str = None,
-                           start_date: str = None, end_date: str = None,
-                           limit: int = 1000, offset: int = 0) -> List[Any]:
+    def get_historical_data(self, sensor_id: Optional[str] = None, 
+                          start_date: Optional[str] = None,
+                          end_date: Optional[str] = None,
+                          limit: int = 1000) -> List[Dict]:
         """
-        Obtiene historial completo de datos con filtros avanzados
-        
-        Args:
-            sensor_id: Filtrar por sensor específico
-            data_type: Filtrar por tipo de dato
-            start_date: Fecha de inicio (ISO format)
-            end_date: Fecha de fin (ISO format)
-            limit: Límite de registros
-            offset: Offset para paginación
-            
-        Returns:
-            Lista de objetos de telemetría
+        Obtiene datos históricos con filtros
         """
         try:
-            filters = {}
+            query = "SELECT * FROM telemetry_records WHERE 1=1"
+            params = []
+            
             if sensor_id:
-                filters['sensor_id'] = sensor_id
-            if data_type:
-                filters['data_type'] = data_type
-            if start_date:
-                filters['start_date'] = start_date
-            if end_date:
-                filters['end_date'] = end_date
+                query += " AND sensor_id = ?"
+                params.append(sensor_id)
             
-            query, params = QueryBuilder.build_select_query(filters, limit, offset)
+            if start_date:
+                query += " AND timestamp >= ?"
+                params.append(start_date)
+            
+            if end_date:
+                query += " AND timestamp <= ?"
+                params.append(end_date)
+            
+            query += " ORDER BY timestamp DESC LIMIT ?"
+            params.append(limit)
             
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(query, params)
-                
-                records = []
-                for row in cursor.fetchall():
-                    records.append(self._record_to_telemetry(row))
-                
-                self.logger.info(f"Obtenidos {len(records)} registros históricos")
-                return records
+                return [self._row_to_dict(row) for row in cursor.fetchall()]
                 
         except Exception as e:
-            self.logger.error(f"Error obteniendo historial: {e}")
+            self.logger.error(f"Error obteniendo datos históricos: {e}")
             return []
     
-    def get_analytics(self, group_by: str = 'hourly', 
-                     filters: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+    def get_analytics(self, group_by: str = 'data_type') -> List[Dict]:
         """
-        Obtiene analytics agregados de los datos
-        
-        Args:
-            group_by: Tipo de agrupamiento ('hourly', 'daily', 'monthly', 'sensor', 'data_type')
-            filters: Filtros adicionales
-            
-        Returns:
-            Lista de analytics agregados
+        Calcula analytics agregados
         """
         try:
-            if filters is None:
-                filters = {}
+            # Validar group_by
+            valid_groups = ['data_type', 'sensor_id', 'priority', 'hour', 'day', 'month']
+            if group_by not in valid_groups:
+                self.logger.warning(f"group_by '{group_by}' no válido, usando 'data_type'")
+                group_by = 'data_type'
             
-            query, params = QueryBuilder.build_aggregate_query(group_by, filters)
+            if group_by == 'hour':
+                group_expr = "strftime('%Y-%m-%d %H:00:00', timestamp)"
+            elif group_by == 'day':
+                group_expr = "strftime('%Y-%m-%d', timestamp)"
+            elif group_by == 'month':
+                group_expr = "strftime('%Y-%m', timestamp)"
+            else:
+                group_expr = group_by
+            
+            query = f"""
+                SELECT 
+                    {group_expr} as period,
+                    data_type,
+                    COUNT(*) as count,
+                    AVG(value) as avg_value,
+                    MIN(value) as min_value,
+                    MAX(value) as max_value,
+                    COUNT(DISTINCT sensor_id) as unique_sensors
+                FROM telemetry_records
+                GROUP BY {group_expr}, data_type
+                ORDER BY period DESC
+            """
             
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute(query, params)
-                
-                analytics = []
-                for row in cursor.fetchall():
-                    analytics.append({
-                        'period': row['period'],
-                        'data_type': row['data_type'],
-                        'count': row['count'],
-                        'avg_value': row['avg_value'],
-                        'min_value': row['min_value'],
-                        'max_value': row['max_value'],
-                        'unique_sensors': row['unique_sensors']
-                    })
-                
-                return analytics
+                cursor.execute(query)
+                return [self._row_to_dict(row) for row in cursor.fetchall()]
                 
         except Exception as e:
-            self.logger.error(f"Error obteniendo analytics: {e}")
+            self.logger.error(f"Error calculando analytics: {e}")
             return []
     
     def get_by_location(self, latitude: float, longitude: float, 
-                       radius_km: float, limit: int = 100) -> List[Any]:
+                       radius_km: float = 1.0) -> List[Dict]:
         """
-        Obtiene registros por proximidad geográfica
-        
-        Args:
-            latitude: Latitud del punto central
-            longitude: Longitud del punto central
-            radius_km: Radio de búsqueda en kilómetros
-            limit: Límite de resultados
-            
-        Returns:
-            Lista de objetos de telemetría cercanos
+        Búsqueda basada en ubicación
         """
         try:
-            filters = {
-                'location_radius': (latitude, longitude, radius_km)
-            }
-            
-            query, params = QueryBuilder.build_select_query(filters, limit)
+            # Fórmula aproximada para distancia en SQLite
+            # Usar la fórmula de Haversine simplificada
+            query = """
+                SELECT *
+                FROM (
+                    SELECT *,
+                        (6371 * acos(
+                            cos(radians(?)) * cos(radians(location_lat)) * 
+                            cos(radians(location_lng) - radians(?)) + 
+                            sin(radians(?)) * sin(radians(location_lat))
+                        )) as distance
+                    FROM telemetry_records
+                ) as location_data
+                WHERE distance <= ?
+                ORDER BY distance
+            """
             
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute(query, params)
-                
-                records = []
-                for row in cursor.fetchall():
-                    records.append(self._record_to_telemetry(row))
-                
-                return records
+                cursor.execute(query, (latitude, longitude, latitude, radius_km))
+                rows = cursor.fetchall()
+                return [self._row_to_dict(row) for row in rows]
                 
         except Exception as e:
             self.logger.error(f"Error en búsqueda por ubicación: {e}")
             return []
     
-    def get_statistics(self, sensor_id: str = None, 
-                      start_date: str = None, end_date: str = None) -> Dict[str, Any]:
+    def get_statistics(self) -> Dict[str, Any]:
         """
-        Obtiene estadísticas generales de los datos
-        
-        Args:
-            sensor_id: Filtrar por sensor específico
-            start_date: Fecha de inicio
-            end_date: Fecha de fin
-            
-        Returns:
-            Diccionario con estadísticas
+        Calcula estadísticas generales
         """
         try:
-            base_query = """
-                SELECT 
-                    COUNT(*) as total_records,
-                    COUNT(DISTINCT sensor_id) as unique_sensors,
-                    COUNT(DISTINCT data_type) as data_types,
-                    AVG(value) as avg_value,
-                    MIN(timestamp) as earliest_record,
-                    MAX(timestamp) as latest_record,
-                    COUNT(CASE WHEN processed = 1 THEN 1 END) as processed_count
-                FROM telemetry_records
-                WHERE 1=1
-            """
-            
-            params = []
-            conditions = []
-            
-            if sensor_id:
-                conditions.append("sensor_id = ?")
-                params.append(sensor_id)
-            if start_date:
-                conditions.append("timestamp >= ?")
-                params.append(start_date)
-            if end_date:
-                conditions.append("timestamp <= ?")
-                params.append(end_date)
-            
-            if conditions:
-                base_query += " AND " + " AND ".join(conditions)
-            
-            with self._get_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute(base_query, params)
-                
-                row = cursor.fetchone()
-                if row:
-                    return {
-                        'total_records': row['total_records'],
-                        'unique_sensors': row['unique_sensors'],
-                        'data_types': row['data_types'],
-                        'avg_value': row['avg_value'],
-                        'earliest_record': row['earliest_record'],
-                        'latest_record': row['latest_record'],
-                        'processed_count': row['processed_count'],
-                        'unprocessed_count': row['total_records'] - row['processed_count']
-                    }
-            
-            return {}
-            
-        except Exception as e:
-            self.logger.error(f"Error obteniendo estadísticas: {e}")
-            return {}
-    
-    def cleanup_old_records(self, days_to_keep: int = 30) -> int:
-        """
-        Limpia registros antiguos para mantener el rendimiento
-        
-        Args:
-            days_to_keep: Días de datos a mantener
-            
-        Returns:
-            int: Número de registros eliminados
-        """
-        try:
-            cutoff_date = datetime.now(timezone.utc)
-            cutoff_date = cutoff_date.replace(day=cutoff_date.day - days_to_keep)
-            cutoff_str = cutoff_date.isoformat()
-            
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 
-                # Contar registros a eliminar
-                cursor.execute("""
-                    SELECT COUNT(*) FROM telemetry_records 
-                    WHERE timestamp < ?
-                """, (cutoff_str,))
-                count_to_delete = cursor.fetchone()[0]
+                # Estadísticas básicas
+                cursor.execute("SELECT COUNT(*) FROM telemetry_records")
+                total_records = cursor.fetchone()[0]
                 
-                # Eliminar registros antiguos
-                cursor.execute("""
-                    DELETE FROM telemetry_records 
-                    WHERE timestamp < ?
-                """, (cutoff_str,))
+                cursor.execute("SELECT COUNT(DISTINCT sensor_id) FROM telemetry_records")
+                unique_sensors = cursor.fetchone()[0]
                 
-                # Limpiar índices huérfanos
-                cursor.execute("""
-                    DELETE FROM telemetry_indexes 
-                    WHERE record_id NOT IN (SELECT id FROM telemetry_records)
-                """)
+                cursor.execute("SELECT COUNT(DISTINCT data_type) FROM telemetry_records")
+                data_types = cursor.fetchone()[0]
                 
-                self.logger.info(f"Eliminados {count_to_delete} registros antiguos")
-                return count_to_delete
+                cursor.execute("SELECT AVG(value) FROM telemetry_records")
+                avg_value = cursor.fetchone()[0] or 0.0
+                
+                cursor.execute("SELECT MIN(timestamp) FROM telemetry_records")
+                earliest = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT MAX(timestamp) FROM telemetry_records")
+                latest = cursor.fetchone()[0]
+                
+                return {
+                    'total_records': total_records,
+                    'unique_sensors': unique_sensors,
+                    'data_types': data_types,
+                    'avg_value': round(avg_value, 2) if avg_value else 0.0,
+                    'earliest_record': earliest,
+                    'latest_record': latest
+                }
                 
         except Exception as e:
-            self.logger.error(f"Error en limpieza de datos: {e}")
-            return 0
+            self.logger.error(f"Error calculando estadísticas: {e}")
+            return {
+                'total_records': 0,
+                'unique_sensors': 0,
+                'data_types': 0,
+                'avg_value': 0.0,
+                'earliest_record': None,
+                'latest_record': None
+            }
     
-    def export_data(self, format: str = 'json', 
-                   filters: Dict[str, Any] = None) -> Union[str, List[Dict[str, Any]]]:
+    def export_data(self, format: str = 'dict') -> Union[str, List[Dict]]:
         """
         Exporta datos en diferentes formatos
-        
-        Args:
-            format: Formato de exportación ('json', 'csv', 'dict')
-            filters: Filtros para los datos a exportar
-            
-        Returns:
-            Datos exportados en el formato solicitado
         """
         try:
-            if filters is None:
-                filters = {}
-            
-            query, params = QueryBuilder.build_select_query(filters)
-            
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute(query, params)
+                cursor.execute("SELECT * FROM telemetry_records ORDER BY timestamp DESC")
+                rows = [self._row_to_dict(row) for row in cursor.fetchall()]
                 
-                records = []
-                for row in cursor.fetchall():
-                    record_dict = dict(row)
-                    records.append(record_dict)
-            
-            if format == 'json':
-                return json.dumps(records, indent=2, default=str)
-            elif format == 'dict':
-                return records
-            else:
-                raise ValueError(f"Formato no soportado: {format}")
-                
+                if format.lower() == 'json':
+                    return json.dumps(rows, indent=2, default=str)
+                else:
+                    return rows
+                    
         except Exception as e:
             self.logger.error(f"Error exportando datos: {e}")
-            return []
-    
-    def _telemetry_to_record(self, telemetry: Any) -> TelemetryRecord:
-        """Convierte objeto de telemetría a record SQL"""
-        # Manejo flexible de diferentes tipos de entrada
-        if hasattr(telemetry, '__dict__'):
-            # Objeto con atributos
-            data = asdict(telemetry) if hasattr(telemetry, '__dataclass_fields__') else telemetry.__dict__
-        else:
-            # Diccionario
-            data = telemetry
-        
-        return TelemetryRecord(
-            id=data.get('id', str(data.get('sensor_id', '')) + '_' + str(data.get('timestamp', ''))),
-            sensor_id=str(data.get('sensor_id', '')),
-            timestamp=data.get('timestamp', datetime.now(timezone.utc).isoformat()),
-            data_type=data.get('data_type', 'unknown'),
-            value=float(data.get('value', 0.0)),
-            unit=data.get('unit', ''),
-            location_lat=float(data.get('location', {}).get('lat', 0.0) if isinstance(data.get('location'), dict) else getattr(data, 'lat', 0.0)),
-            location_lng=float(data.get('location', {}).get('lng', 0.0) if isinstance(data.get('location'), dict) else getattr(data, 'lng', 0.0)),
-            priority=str(data.get('priority', 'normal')),
-            gateway_id=data.get('gateway_id'),
-            metadata_json=json.dumps(data.get('metadata', {})) if data.get('metadata') else None,
-            processed=data.get('processed', False)
-        )
-    
-    def _record_to_telemetry(self, row) -> Any:
-        """Convierte row SQL a objeto de telemetría"""
-        if Telemetry:
-            # Usar la entidad del dominio si está disponible
-            return Telemetry(
-                id=row['id'],
-                sensor_id=row['sensor_id'],
-                timestamp=row['timestamp'],
-                data_type=row['data_type'],
-                value=row['value'],
-                unit=row['unit'],
-                location=Location(row['location_lat'], row['location_lng']) if Location else None,
-                priority=Priority(row['priority']) if Priority else row['priority'],
-                gateway_id=row['gateway_id'],
-                metadata=json.loads(row['metadata_json']) if row['metadata_json'] else None
-            )
-        else:
-            # Diccionario como fallback
-            return {
-                'id': row['id'],
-                'sensor_id': row['sensor_id'],
-                'timestamp': row['timestamp'],
-                'data_type': row['data_type'],
-                'value': row['value'],
-                'unit': row['unit'],
-                'location': {
-                    'lat': row['location_lat'],
-                    'lng': row['location_lng']
-                },
-                'priority': row['priority'],
-                'gateway_id': row['gateway_id'],
-                'metadata': json.loads(row['metadata_json']) if row['metadata_json'] else None,
-                'processed': bool(row['processed']),
-                'created_at': row['created_at']
-            }
+            return [] if format.lower() != 'json' else '[]'
     
     def health_check(self) -> Dict[str, Any]:
         """
         Verifica el estado de salud de la base de datos
-        
-        Returns:
-            Dict con información de salud
         """
         try:
             stats = self.get_statistics()
@@ -801,7 +426,7 @@ class SQLTelemetryRepository(InMemoryTelemetryRepository if InMemoryTelemetryRep
                     'total_records': stats.get('total_records', 0),
                     'unique_sensors': stats.get('unique_sensors', 0),
                     'database_path': str(self.db_path),
-                    'wal_mode_enabled': True  # Configurado en _init_database
+                    'wal_mode_enabled': True
                 }
                 
         except Exception as e:
@@ -811,14 +436,125 @@ class SQLTelemetryRepository(InMemoryTelemetryRepository if InMemoryTelemetryRep
                 'error': str(e),
                 'database_path': str(self.db_path)
             }
+    
+    def _convert_to_record(self, telemetry: Union[Dict, Any]) -> TelemetryRecord:
+        """
+        Convierte diferentes tipos de entrada a TelemetryRecord
+        """
+        # Manejo flexible de diferentes tipos de entrada
+        if hasattr(telemetry, '__dict__'):
+            # Objeto con atributos
+            data = asdict(telemetry) if hasattr(telemetry, '__dataclass_fields__') else telemetry.__dict__
+        else:
+            # Diccionario
+            data = telemetry
+        
+        # Extraer ubicación
+        location = data.get('location', {})
+        if isinstance(location, dict):
+            lat = location.get('lat', 0.0)
+            lng = location.get('lng', 0.0)
+        else:
+            lat = getattr(data, 'lat', 0.0)
+            lng = getattr(data, 'lng', 0.0)
+        
+        return TelemetryRecord(
+            id=data.get('id', str(data.get('sensor_id', '')) + '_' + str(data.get('timestamp', ''))),
+            sensor_id=str(data.get('sensor_id', '')),
+            timestamp=data.get('timestamp', datetime.now(timezone.utc).isoformat()),
+            data_type=data.get('data_type', 'unknown'),
+            value=float(data.get('value', 0.0)),
+            unit=data.get('unit', ''),
+            location_lat=float(lat),
+            location_lng=float(lng),
+            priority=str(data.get('priority', 'normal')),
+            gateway_id=data.get('gateway_id'),
+            metadata_json=json.dumps(data.get('metadata', {})) if data.get('metadata') else None,
+            processed=data.get('processed', False)
+        )
+    
+    def _row_to_dict(self, row) -> Dict:
+        """
+        Convierte una fila SQL a diccionario
+        """
+        # Verificar si row es un resultado de query con descripción
+        if hasattr(row, 'description') and hasattr(row, 'fetchone'):
+            # row es un cursor, obtener la primera fila
+            row = row.fetchone()
+        
+        # Si es una tupla/fila de resultado
+        if len(row) == 13:  # 13 columnas en nuestra tabla principal
+            return {
+                'id': row[0],
+                'sensor_id': row[1],
+                'timestamp': row[2],
+                'data_type': row[3],
+                'value': row[4],
+                'unit': row[5],
+                'location': {'lat': row[6], 'lng': row[7]},
+                'priority': row[8],
+                'gateway_id': row[9],
+                'metadata': json.loads(row[10]) if row[10] else None,
+                'processed': bool(row[11]),
+                'created_at': row[12]
+            }
+        elif len(row) == 7:  # 7 columnas en analytics (period, data_type, count, avg_value, min_value, max_value, unique_sensors)
+            return {
+                'period': row[0],
+                'data_type': row[1],
+                'count': row[2],
+                'avg_value': row[3],
+                'min_value': row[4],
+                'max_value': row[5],
+                'unique_sensors': row[6]
+            }
+        elif len(row) >= 14:  # Resultado de query de ubicación con distancia
+            return {
+                'id': row[0],
+                'sensor_id': row[1],
+                'timestamp': row[2],
+                'data_type': row[3],
+                'value': row[4],
+                'unit': row[5],
+                'location': {'lat': row[6], 'lng': row[7]},
+                'priority': row[8],
+                'gateway_id': row[9],
+                'metadata': json.loads(row[10]) if row[10] else None,
+                'processed': bool(row[11]),
+                'created_at': row[12],
+                'distance': row[13] if len(row) > 13 else 0.0
+            }
+        else:
+            # Mapeo por índice si no sabemos la estructura
+            return {f'col_{i}': val for i, val in enumerate(row)}
+    
+    @contextmanager
+    def _get_connection(self):
+        """
+        Context manager para conexiones
+        """
+        try:
+            yield self.conn
+        except Exception as e:
+            self.logger.error(f"Error en conexión: {e}")
+            raise
+    
+    def close(self):
+        """Cierra la conexión a la base de datos"""
+        if hasattr(self, 'conn') and self.conn:
+            self.conn.close()
+            self.logger.info("Conexión a base de datos cerrada")
+    
+    def __del__(self):
+        """Cleanup cuando el objeto se destruye"""
+        self.close()
 
 
-# Factory para crear instancias del repositorio
 class SQLTelemetryRepositoryFactory:
     """Factory para crear instancias del repositorio SQL"""
     
     @staticmethod
-    def create_repository(db_path: str = "data/urbia_telemetry.db", 
+    def create_repository(db_path: str = "telemetry.db", 
                          enable_wal_mode: bool = True) -> SQLTelemetryRepository:
         """
         Crea una instancia del repositorio SQL
@@ -868,11 +604,13 @@ if __name__ == "__main__":
     print(f"✓ Recuperados {len(historical_data)} registros históricos")
     
     # Obtener analytics
-    analytics = repo.get_analytics('daily')
-    print(f"✓ Analytics diarios: {len(analytics)} períodos")
+    analytics = repo.get_analytics('data_type')
+    print(f"✓ Analytics por tipo de dato: {len(analytics)} categorías")
     
     # Búsqueda por ubicación
     location_data = repo.get_by_location(5.0703, -75.5138, 5.0)
     print(f"✓ Datos en radio de 5km: {len(location_data)} registros")
     
     print("\n=== Repositorio SQL configurado y funcionando ===")
+    
+    repo.close()

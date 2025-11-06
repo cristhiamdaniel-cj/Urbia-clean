@@ -1,81 +1,84 @@
-# 🏛️ Arquitectura Detallada - UrbIA IoT
+# Arquitectura Detallada del Sistema UrbIA IoT
 
-## 📐 Diagrama de Arquitectura en Capas
+## Diagrama de Arquitectura en Capas
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    PRESENTATION LAYER                           │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │   REST API   │  │  Web Dashboard│ │  CLI Tools   │         │
-│  │  (Flask)     │  │   (HTML/JS)   │ │   (Python)   │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │   REST API   │  │  Web Dashboard│ │  CLI Tools   │           │
+│  │  (Flask)     │  │   (HTML/JS)   │ │   (Python)   │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
 └─────────────────────────────────────────────────────────────────┘
                             ↓↑
 ┌─────────────────────────────────────────────────────────────────┐
 │                   APPLICATION LAYER                             │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  Services: SensorService, TelemetryService, SDNService   │  │
-│  │  DTOs: SensorDTO, TelemetryDTO                          │  │
-│  │  Use Cases: RegisterSensor, ProcessTelemetry            │  │
-│  └──────────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │  Services: SensorService, TelemetryService, SDNService   │    │
+│  │  DTOs: SensorDTO, TelemetryDTO                           │    │
+│  │  Use Cases: RegisterSensor, ProcessTelemetry             │    │
+│  └──────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
                             ↓↑
 ┌─────────────────────────────────────────────────────────────────┐
 │                      DOMAIN LAYER                               │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │  Entities    │  │ Value Objects│  │ Repositories │         │
-│  │  - Sensor    │  │  - Location  │  │ (Interfaces) │         │
-│  │  - Gateway   │  │  - Priority  │  │              │         │
-│  │  - Telemetry │  │  - SensorId  │  │              │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │  Domain Services: RoutingStrategy, GatewayService       │  │
-│  └──────────────────────────────────────────────────────────┘  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │  Entities    │  │ Value Objects│  │ Repositories │           │
+│  │  - Sensor    │  │  - Location  │  │ (Interfaces) │           │
+│  │  - Gateway   │  │  - Priority  │  │              │           │
+│  │  - Telemetry │  │  - SensorId  │  │              │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
+│  ┌──────────────────────────────────────────────────────────┐    │
+│  │  Domain Services: RoutingStrategy, GatewayService        │    │
+│  └──────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
                             ↓↑
 ┌─────────────────────────────────────────────────────────────────┐
 │                  INFRASTRUCTURE LAYER                           │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐         │
-│  │ Persistence  │  │   SDN/Edge   │  │   Analysis   │         │
-│  │  - Memory    │  │  Controller  │  │   SDNAnalyzer│         │
-│  │  - Loaders   │  │  - Routing   │  │  - Metrics   │         │
-│  └──────────────┘  └──────────────┘  └──────────────┘         │
-│  ┌──────────────┐  ┌──────────────┐                            │
-│  │  Factories   │  │   Adapters   │                            │
-│  │  - Sensor    │  │  - Legacy    │                            │
-│  │  - Gateway   │  │              │                            │
-│  └──────────────┘  └──────────────┘                            │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐           │
+│  │ Persistence  │  │   SDN/Edge   │  │   Analysis   │           │
+│  │  - Memory    │  │  Controller  │  │   SDNAnalyzer│           │
+│  │  - Loaders   │  │  - Routing   │  │  - Metrics   │           │
+│  └──────────────┘  └──────────────┘  └──────────────┘           │
+│  ┌──────────────┐  ┌──────────────┐                              │
+│  │  Factories   │  │   Adapters   │                              │
+│  │  - Sensor    │  │  - Legacy    │                              │
+│  │  - Gateway   │  │              │                              │
+│  └──────────────┘  └──────────────┘                              │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📂 Descripción de Cada Capa
+## Descripción de Cada Capa
 
-### 1️⃣ DOMAIN LAYER (Núcleo del Negocio)
+### 1. Domain Layer (Núcleo del Negocio)
 
-#### 📦 Entities (src/domain/entities/)
-Objetos con identidad única y ciclo de vida.
+#### Entities (src/domain/entities/)
 
-| Entidad | Responsabilidad | Atributos Principales |
-|---------|----------------|----------------------|
-| **Sensor** | Representa un dispositivo IoT | id, name, type, location, priority |
-| **Gateway** | Gateway Edge que agrupa sensores | id, name, location, sensors[] |
-| **Telemetry** | Lectura de telemetría | sensor_id, value, timestamp, is_critical |
-| **Route** | Ruta de red SDN | id, name, latency, capacity |
-| **RoutingDecision** | Decisión de enrutamiento | sensor_id, route, strategy, timestamp |
+Objetos con identidad única y ciclo de vida propio.
 
-#### 💎 Value Objects (src/domain/value_objects/)
+| Entidad         | Responsabilidad               | Atributos Principales                    |
+| --------------- | ----------------------------- | ---------------------------------------- |
+| Sensor          | Representa un dispositivo IoT | id, name, type, location, priority       |
+| Gateway         | Nodo Edge que agrupa sensores | id, name, location, sensors[]            |
+| Telemetry       | Lectura de telemetría         | sensor_id, value, timestamp, is_critical |
+| Route           | Ruta de red SDN               | id, name, latency, capacity              |
+| RoutingDecision | Decisión de enrutamiento      | sensor_id, route, strategy, timestamp    |
+
+#### Value Objects (src/domain/value_objects/)
+
 Objetos inmutables sin identidad.
 
-| Value Object | Propósito | Validaciones |
-|--------------|-----------|--------------|
-| **Location** | Coordenadas geográficas | lat, lng válidos (-90,90), (-180,180) |
-| **Priority** | Nivel de prioridad | Enum: CRITICAL, HIGH, NORMAL, LOW |
-| **SensorId** | Identificador único | Formato validado (ej: NOISE-001) |
+| Value Object | Propósito                          | Validaciones                          |
+| ------------ | ---------------------------------- | ------------------------------------- |
+| Location     | Representa coordenadas geográficas | lat, lng válidos (-90,90), (-180,180) |
+| Priority     | Nivel de prioridad                 | Enum: CRITICAL, HIGH, NORMAL, LOW     |
+| SensorId     | Identificador único                | Formato validado (ej. NOISE-001)      |
 
-#### 🔌 Repositories (Interfaces)
-Abstracciones para persistencia.
+#### Repositories (Interfaces)
+
+Abstracciones para el manejo de persistencia.
 
 ```python
 # src/domain/repositories/sensor_repository.py
@@ -90,28 +93,31 @@ class SensorRepository(ABC):
     def find_all(self) -> List[Sensor]: pass
 ```
 
-#### ⚙️ Domain Services
-Lógica de negocio compleja que no pertenece a una entidad.
+#### Domain Services
 
-- **RoutingStrategy**: Estrategias de enrutamiento SDN
-- **GatewayService**: Lógica de asignación sensor-gateway
+Contienen la lógica de negocio compleja que no pertenece a una sola entidad.
+
+* RoutingStrategy: Estrategias de enrutamiento SDN.
+* GatewayService: Lógica de asignación entre sensores y gateways.
 
 ---
 
-### 2️⃣ APPLICATION LAYER (Orquestación)
+### 2. Application Layer (Orquestación)
 
-#### 🎯 Services (src/application/services/)
-Coordinan casos de uso y orquestan el dominio.
+#### Services (src/application/services/)
 
-| Servicio | Responsabilidad |
-|----------|----------------|
-| **SensorService** | Gestión CRUD de sensores |
-| **TelemetryService** | Procesamiento de telemetría |
-| **GatewayService** | Gestión de gateways |
-| **SDNControllerService** | Control de enrutamiento |
+Coordina los casos de uso y orquesta las operaciones del dominio.
 
-#### 📋 DTOs (Data Transfer Objects)
-Objetos para transferencia entre capas.
+| Servicio             | Responsabilidad              |
+| -------------------- | ---------------------------- |
+| SensorService        | Gestión CRUD de sensores     |
+| TelemetryService     | Procesamiento de telemetría  |
+| GatewayService       | Administración de gateways   |
+| SDNControllerService | Control del enrutamiento SDN |
+
+#### DTOs (Data Transfer Objects)
+
+Objetos para transferencia de datos entre capas.
 
 ```python
 # src/application/dto/sensor_dto.py
@@ -125,54 +131,60 @@ class SensorDTO:
     last_reading: Optional[Dict]
 ```
 
-#### 🎬 Use Cases (src/application/use_cases/)
-Casos de uso específicos del negocio (actualmente mínimos, se pueden expandir).
+#### Use Cases (src/application/use_cases/)
+
+Casos de uso específicos del negocio.
 
 ---
 
-### 3️⃣ INFRASTRUCTURE LAYER (Implementaciones)
+### 3. Infrastructure Layer (Implementaciones)
 
-#### 💾 Persistence (src/infrastructure/persistence/)
-Implementaciones concretas de repositorios.
+#### Persistence (src/infrastructure/persistence/)
 
-- **MemorySensorRepository**: Almacenamiento en memoria
-- **MemoryGatewayRepository**: Almacenamiento en memoria
-- **SensorLoader**: Carga inicial desde JSON
-- **AdvancedSensorLoader**: Carga de 15 sensores avanzados
+Implementaciones concretas de los repositorios del dominio.
 
-#### 🏭 Factories (src/infrastructure/factories/)
-Creación de objetos complejos.
+* MemorySensorRepository: Almacenamiento en memoria.
+* MemoryGatewayRepository: Almacenamiento temporal de gateways.
+* SensorLoader: Carga inicial desde JSON.
+* AdvancedSensorLoader: Carga extendida de sensores avanzados.
+
+#### Factories (src/infrastructure/factories/)
+
+Creación de objetos complejos a partir de configuraciones.
 
 ```python
 # sensor_factory.py
 class SensorFactory:
     def create_noise_sensor(self, config: dict) -> Sensor
     def create_temperature_sensor(self, config: dict) -> Sensor
-    # ... otros tipos
 ```
 
-#### 🧠 Analysis (src/infrastructure/analysis/)
-**SDNAnalyzer**: Sistema de análisis matemático en tiempo real.
+#### Analysis (src/infrastructure/analysis/)
 
-Métricas calculadas:
-- Latencia promedio/min/max
-- Throughput por gateway
-- Congestión por ruta
-- Distribución de estrategias
-- Estadísticas descriptivas
+Módulo de análisis estadístico y matemático en tiempo real.
 
-#### 🔌 Adapters (src/infrastructure/adapters/)
-Adaptadores para sistemas legacy.
+Métricas principales:
 
-- **LegacySensorAdapter**: Integración con sensores antiguos
+* Latencia promedio, mínima y máxima.
+* Throughput por gateway.
+* Congestión por ruta.
+* Distribución de estrategias.
+* Estadísticas descriptivas generales.
+
+#### Adapters (src/infrastructure/adapters/)
+
+Adaptadores para integración con sistemas heredados.
+
+* LegacySensorAdapter: Permite compatibilidad con sensores antiguos.
 
 ---
 
-### 4️⃣ PRESENTATION LAYER (Interfaces)
+### 4. Presentation Layer (Interfaces)
 
-#### 🌐 API REST (src/presentation/api/routes/)
+#### API REST (src/presentation/api/routes/)
 
-**Endpoints disponibles:**
+Endpoints disponibles:
+
 ```
 GET  /api/sensors              - Lista de sensores
 GET  /api/telemetry/current    - Telemetría actual
@@ -181,38 +193,41 @@ GET  /api/events               - Eventos SDN
 GET  /api/sdn-analysis         - Análisis matemático
 ```
 
-#### 🖥️ Web Dashboard (src/presentation/web/)
-**dashboard_app.py**: Aplicación Flask con múltiples vistas.
+#### Web Dashboard (src/presentation/web/)
 
-**Templates disponibles:**
-- `index_iot_filtered.html`: Dashboard principal con filtros
-- `analysis_dashboard.html`: Análisis matemático
-- `network_topology_dynamic.html`: Topología 3D
-- `api_documentation.html`: Documentación API
-- `admin_panel.html`: Panel de administración
+Aplicación Flask con vistas HTML y análisis de datos.
 
-#### ⌨️ CLI (src/presentation/cli/)
-Herramientas de línea de comandos (preparadas para expansión).
+Templates principales:
+
+* index_iot_filtered.html
+* analysis_dashboard.html
+* network_topology_dynamic.html
+* api_documentation.html
+* admin_panel.html
+
+#### CLI (src/presentation/cli/)
+
+Herramientas de línea de comandos para interacción avanzada.
 
 ---
 
-## 🔗 Shared Layer (Transversal)
+## Shared Layer (Transversal)
 
-### 📡 Events (src/shared/events/)
-Sistema de eventos del dominio.
+### Events (src/shared/events/)
+
+Definición de eventos del dominio.
 
 ```python
-# events.py
 class DomainEvent(ABC): pass
 
-# Eventos específicos
 class SensorRegistered(DomainEvent)
 class TelemetryReceived(DomainEvent)
 class CriticalAlertTriggered(DomainEvent)
 ```
 
-### ⚠️ Exceptions (src/shared/exceptions/)
-Excepciones del dominio.
+### Exceptions (src/shared/exceptions/)
+
+Excepciones controladas del dominio.
 
 ```python
 class SensorNotFoundException(DomainException)
@@ -222,70 +237,63 @@ class TelemetryProcessingException(DomainException)
 
 ---
 
-## 🧪 Testing Strategy
+## Estrategia de Pruebas
 
 ### Unit Tests (tests/unit/)
-- `test_sensor_service.py`: Servicios de sensores
-- `test_telemetry_service.py`: Servicios de telemetría
-- `test_sdn_controller.py`: Controlador SDN
-- `test_sensor_factory.py`: Factories
+
+* test_sensor_service.py
+* test_telemetry_service.py
+* test_sdn_controller.py
+* test_sensor_factory.py
 
 ### Integration Tests (tests/integration/)
-- `test_api_endpoints.py`: Endpoints REST
 
-**Cobertura actual**: >80%
+* test_api_endpoints.py
 
----
-
-## 🎓 Contribuciones a la Investigación
-
-### 1. Arquitectura Limpia en IoT
-Primera implementación documentada de Clean Architecture completa en sistema IoT urbano.
-
-### 2. SDN para Smart Cities
-Controlador SDN con 4 estrategias adaptativas:
-- Round Robin
-- Shortest Path
-- Priority-Based
-- Load Balancing
-
-### 3. Análisis Matemático en Tiempo Real
-Sistema de métricas estadísticas con:
-- Latencia (min/max/media/std)
-- Throughput por gateway
-- Congestión por ruta
-- Distribución de estrategias
-
-### 4. Escalabilidad Demostrada
-- 15 sensores con intervalos variables (1-20s)
-- Throughput: 1134+ pkt/s
-- Latencia: <20ms promedio
+Cobertura actual: superior al 80%.
 
 ---
 
-## 📊 Métricas del Proyecto
+## Contribuciones a la Investigación
 
-**Estadísticas de Código:**
-- Líneas de código Python: ~3,000+
-- Archivos Python: 60+
-- Templates HTML: 11
-- Capas arquitectónicas: 4
-- Principios SOLID: 5/5 ✅
-- Cobertura de tests: >80%
+1. **Arquitectura Limpia en IoT**
+   Implementación documentada de Clean Architecture aplicada a sistemas urbanos inteligentes.
+
+2. **Controlador SDN para Smart Cities**
+   Uso de estrategias adaptativas de enrutamiento (Round Robin, Shortest Path, Priority-Based, Load Balancing).
+
+3. **Análisis Matemático en Tiempo Real**
+   Sistema de métricas con análisis de latencia, throughput y congestión de red.
+
+4. **Escalabilidad Demostrada**
+   Pruebas con 15 sensores, intervalos de lectura variables y throughput superior a 1100 paquetes por segundo.
+
+---
+
+## Métricas del Proyecto
+
+* Líneas de código Python: aproximadamente 3.000
+* Archivos Python: más de 60
+* Templates HTML: 11
+* Capas arquitectónicas: 4
+* Principios SOLID cumplidos: 5/5
+* Cobertura de pruebas: superior al 80%
 
 **Complejidad Arquitectónica:**
-- Entidades del dominio: 5
-- Value Objects: 3
-- Servicios de aplicación: 4
-- Repositorios: 3
-- Factories: 2
-- Estrategias SDN: 4
+
+* Entidades del dominio: 5
+* Value Objects: 3
+* Servicios de aplicación: 4
+* Repositorios: 3
+* Factories: 2
+* Estrategias SDN: 4
 
 ---
 
-## 🚀 Deployment
+## Despliegue
 
 ### Docker
+
 ```yaml
 services:
   urbia:
@@ -296,32 +304,31 @@ services:
       - ./logs:/app/logs
 ```
 
-### Startup
+### Inicio del Servicio
+
 ```bash
 docker-compose up -d
 ```
 
-**Servicios expuestos:**
-- Dashboard: http://localhost:5001/
-- API: http://localhost:5001/api/
-- Docs: http://localhost:5001/api-docs
+Servicios disponibles:
+
+* Dashboard: [http://localhost:5001/](http://localhost:5001/)
+* API: [http://localhost:5001/api/](http://localhost:5001/api/)
+* Documentación: [http://localhost:5001/api-docs](http://localhost:5001/api-docs)
 
 ---
 
-## 📚 Referencias Bibliográficas Sugeridas
+## Referencias Bibliográficas Sugeridas
 
-Para tu tesis, considera citar:
-
-1. **Clean Architecture**: Martin, R. C. (2017). Clean Architecture: A Craftsman's Guide to Software Structure and Design.
-
-2. **Domain-Driven Design**: Evans, E. (2003). Domain-Driven Design: Tackling Complexity in the Heart of Software.
-
-3. **SDN**: Kreutz, D., et al. (2015). Software-defined networking: A comprehensive survey. Proceedings of the IEEE.
-
-4. **IoT Architecture**: Mineraud, J., et al. (2016). A gap analysis of Internet-of-Things platforms. Computer Communications.
+1. Martin, R. C. (2017). *Clean Architecture: A Craftsman's Guide to Software Structure and Design.* Prentice Hall.
+2. Evans, E. (2003). *Domain-Driven Design: Tackling Complexity in the Heart of Software.* Addison-Wesley.
+3. Kreutz, D., Ramos, F., Verissimo, P., et al. (2015). *Software-defined networking: A comprehensive survey.* *Proceedings of the IEEE.*
+4. Mineraud, J., Mazhelis, O., Su, X., & Tarkoma, S. (2016). *A gap analysis of Internet-of-Things platforms.* *Computer Communications.*
 
 ---
 
-**Autor**: Doctorando en Ingeniería  
-**Universidad**: Universidad Nacional de Colombia - Sede Manizales  
-**Fecha**: Octubre 2025
+**Autor:** Doctorando en Ingeniería
+**Universidad:** Universidad Nacional de Colombia – Sede Manizales
+**Fecha:** Octubre de 2025
+
+---

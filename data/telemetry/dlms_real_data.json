@@ -1,0 +1,310 @@
+[
+  {
+    "id": "DLMS-Meter-01_active_energy_total_1762442170902",
+    "sensor_id": "DLMS-Meter-01_active_energy_total",
+    "sensor_type": "active_energy_total",
+    "timestamp": "2025-11-06T10:16:10.902000",
+    "value": 60.03,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-01",
+      "dlms_code": "110",
+      "description": "Energ\u00eda Activa Total",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871636"
+    }
+  },
+  {
+    "id": "DLMS-Meter-01_active_energy_l1_1762442170902",
+    "sensor_id": "DLMS-Meter-01_active_energy_l1",
+    "sensor_type": "active_energy_l1",
+    "timestamp": "2025-11-06T10:16:10.902000",
+    "value": 135.09,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-01",
+      "dlms_code": "132",
+      "description": "Energ\u00eda Activa L1",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871644"
+    }
+  },
+  {
+    "id": "DLMS-Meter-01_active_energy_l2_1762442170902",
+    "sensor_id": "DLMS-Meter-01_active_energy_l2",
+    "sensor_type": "active_energy_l2",
+    "timestamp": "2025-11-06T10:16:10.902000",
+    "value": 1.324,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-01",
+      "dlms_code": "133",
+      "description": "Energ\u00eda Activa L2",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871651"
+    }
+  },
+  {
+    "id": "DLMS-Meter-01_active_energy_l3_1762442170902",
+    "sensor_id": "DLMS-Meter-01_active_energy_l3",
+    "sensor_type": "active_energy_l3",
+    "timestamp": "2025-11-06T10:16:10.902000",
+    "value": 0.6,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-01",
+      "dlms_code": "134",
+      "description": "Energ\u00eda Activa L3",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871656"
+    }
+  },
+  {
+    "id": "DLMS-Meter-01_active_energy_phase_1762442170902",
+    "sensor_id": "DLMS-Meter-01_active_energy_phase",
+    "sensor_type": "active_energy_phase",
+    "timestamp": "2025-11-06T10:16:10.902000",
+    "value": 56377.0,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-01",
+      "dlms_code": "135",
+      "description": "Energ\u00eda Activa por Fase",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871662"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_active_energy_total_1762328858540",
+    "sensor_id": "DLMS-Meter-02_active_energy_total",
+    "sensor_type": "active_energy_total",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 60.06,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "110",
+      "description": "Energ\u00eda Activa Total",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871666"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_active_energy_l1_1762328858540",
+    "sensor_id": "DLMS-Meter-02_active_energy_l1",
+    "sensor_type": "active_energy_l1",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 118.93,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "132",
+      "description": "Energ\u00eda Activa L1",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871672"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_active_energy_l2_1762328858540",
+    "sensor_id": "DLMS-Meter-02_active_energy_l2",
+    "sensor_type": "active_energy_l2",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 10.68,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "133",
+      "description": "Energ\u00eda Activa L2",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871677"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_active_energy_l3_1762328858540",
+    "sensor_id": "DLMS-Meter-02_active_energy_l3",
+    "sensor_type": "active_energy_l3",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 3952.71,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "134",
+      "description": "Energ\u00eda Activa L3",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871682"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_active_energy_phase_1762328858540",
+    "sensor_id": "DLMS-Meter-02_active_energy_phase",
+    "sensor_type": "active_energy_phase",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 153074.68,
+    "unit": "kWh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "135",
+      "description": "Energ\u00eda Activa por Fase",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871688"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_reactive_energy_total_1762328858540",
+    "sensor_id": "DLMS-Meter-02_reactive_energy_total",
+    "sensor_type": "reactive_energy_total",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 121.08,
+    "unit": "kVARh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "193",
+      "description": "Energ\u00eda Reactiva Total",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871694"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_reactive_energy_l1_1762328858540",
+    "sensor_id": "DLMS-Meter-02_reactive_energy_l1",
+    "sensor_type": "reactive_energy_l1",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 120.37,
+    "unit": "kVARh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "194",
+      "description": "Energ\u00eda Reactiva L1",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871700"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_reactive_energy_l2_1762328858540",
+    "sensor_id": "DLMS-Meter-02_reactive_energy_l2",
+    "sensor_type": "reactive_energy_l2",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 10.62,
+    "unit": "kVARh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "195",
+      "description": "Energ\u00eda Reactiva L2",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871704"
+    }
+  },
+  {
+    "id": "DLMS-Meter-02_reactive_energy_l3_1762328858540",
+    "sensor_id": "DLMS-Meter-02_reactive_energy_l3",
+    "sensor_type": "reactive_energy_l3",
+    "timestamp": "2025-11-05T02:47:38.540000",
+    "value": 10.62,
+    "unit": "kVARh",
+    "location": {
+      "lat": 4.6381,
+      "lng": -74.0843,
+      "description": "Universidad Nacional de Colombia"
+    },
+    "priority": "high",
+    "metadata": {
+      "device_name": "DLMS-Meter-02",
+      "dlms_code": "196",
+      "description": "Energ\u00eda Reactiva L3",
+      "source": "thingsboard_unal_ssh",
+      "real_data": true,
+      "sync_time": "2025-11-06T10:17:14.871710"
+    }
+  }
+]
