@@ -210,16 +210,22 @@ class SQLTelemetryRepository(InMemoryTelemetryRepository if InMemoryTelemetryRep
                     gateway_id TEXT,
                     metadata_json TEXT,
                     processed BOOLEAN DEFAULT FALSE,
-                    created_at TEXT NOT NULL
+                    created_at TEXT NOT NULL,
+                    
+                    -- Índices para optimización
+                    
+                    
+                    
+                    
+                    
                 )
-            """)
                 
-            -- Crear índices reales
-            CREATE INDEX IF NOT EXISTS idx_sensor_time ON telemetry_records (sensor_id, timestamp);
-            CREATE INDEX IF NOT EXISTS idx_timestamp ON telemetry_records (timestamp);
-            CREATE INDEX IF NOT EXISTS idx_data_type ON telemetry_records (data_type);
-            CREATE INDEX IF NOT EXISTS idx_priority ON telemetry_records (priority);
-            CREATE INDEX IF NOT EXISTS idx_location ON telemetry_records (location_lat, location_lng);
+                -- Crear índices reales
+                CREATE INDEX IF NOT EXISTS idx_sensor_time ON telemetry_records (sensor_id, timestamp);
+                CREATE INDEX IF NOT EXISTS idx_timestamp ON telemetry_records (timestamp);
+                CREATE INDEX IF NOT EXISTS idx_data_type ON telemetry_records (data_type);
+                CREATE INDEX IF NOT EXISTS idx_priority ON telemetry_records (priority);
+                CREATE INDEX IF NOT EXISTS idx_location ON telemetry_records (location_lat, location_lng);
             """)
             
             # Crear tabla de índices para búsquedas rápidas
