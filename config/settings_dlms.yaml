@@ -1,0 +1,271 @@
+# Configuración DLMS - Sistema de Gestión de Datos de Medición
+# Archivo de configuración para sincronización con ThingsBoard y base de datos local
+
+# =============================================================================
+# CONFIGURACIÓN DE BASE DE DATOS LOCAL (SQLITE)
+# =============================================================================
+database:
+  type: "sqlite"
+  path: "./data/dlms_urbia.db"
+  backup_path: "./backups/dlms_urbia_backup.db"
+  connection_pool_size: 10
+  timeout: 30
+  
+  # Configuración de pragmas SQLite
+  pragmas:
+    journal_mode: "WAL"
+    synchronous: "NORMAL"
+    cache_size: -64000  # 64MB cache
+    temp_store: "MEMORY"
+    mmap_size: 268435456  # 256MB mmap
+  
+  # Configuración de retención de datos
+  retention:
+    days: 365  # Retener datos por 1 año
+    backup_interval_hours: 24
+    cleanup_enabled: true
+
+# =============================================================================
+# CONFIGURACIÓN DE SINCRONIZACIÓN
+# =============================================================================
+sync:
+  # Intervalos de sincronización en segundos
+  intervals:
+    # Sincronización frecuente para datos críticos
+    telemetry_fast: 30    # 30 segundos para datos críticos
+    
+    # Sincronización regular para datos normales
+    telemetry_normal: 300  # 5 minutos para datos normales
+    
+    # Sincronización para configuraciones y comandos
+    config_sync: 600       # 10 minutos para configuraciones
+    
+    # Sincronización de eventos y alarmas
+    events_sync: 120       # 2 minutos para eventos
+    
+    # Sincronización de metadatos de dispositivos
+    device_metadata: 1800  # 30 minutos para metadatos
+  
+  # Configuración de reintentos
+  retry:
+    max_attempts: 3
+    backoff_multiplier: 2
+    initial_delay: 5
+    max_delay: 300
+  
+  # Configuración de timeouts
+  timeouts:
+    connect: 10    # segundos
+    read: 30       # segundos
+    write: 15      # segundos
+
+# =============================================================================
+# CONFIGURACIÓN DE THINGSBOARD
+# =============================================================================
+thingsboard:
+  # URLs base de ThingsBoard
+  endpoints:
+    # Environment development
+    dev:
+      http_url: "http://localhost:8080"
+      ws_url: "ws://localhost:8080"
+    
+    # Environment production
+    prod:
+      http_url: "https://thingsboard.cloud"
+      ws_url: "wss://thingsboard.cloud"
+    
+    # Environment custom (ejemplo para servidor local)
+    local:
+      http_url: "http://192.168.1.100:8080"
+      ws_url: "ws://192.168.1.100:8080"
+  
+  # Credenciales de acceso
+  credentials:
+    username: "dlms_user"
+    password: "${TB_PASSWORD}"  # Variable de entorno
+    tenant_id: "${TB_TENANT_ID}"
+    device_access_token: "${TB_DEVICE_TOKEN}"
+  
+  # Configuración de autenticación
+  auth:
+    type: "basic"  # basic, token, or jwt
+    token_ttl: 3600  # Tiempo de vida del token en segundos
+  
+  # Configuración de carga de datos
+  payload:
+    batch_size: 100
+    max_queue_size: 1000
+    compression_enabled: true
+    compression_threshold: 1024  # Comprimir payloads > 1KB
+
+# =============================================================================
+# CONFIGURACIÓN DE DISPOSITIVOS DLMS
+# =============================================================================
+devices:
+  # Configuración por defecto de dispositivos
+  default:
+    obis_code_prefix: "0.0.96.1"
+    data_profile: "standard"
+    encryption_enabled: false
+    frame_counter_enabled: true
+  
+  # Configuraciones específicas por tipo de dispositivo
+  types:
+    electricity_meter:
+      obis_codes:
+        - "1.7.0"  # Active energy import
+        - "2.7.0"  # Active energy export
+        - "3.7.0"  # Reactive energy import
+        - "4.7.0"  # Reactive energy export
+        - "7.0.0"  # Instantaneous active power
+        - "8.0.0"  # Instantaneous reactive power
+    
+    water_meter:
+      obis_codes:
+        - "7.12.0"  # Volume
+        - "8.12.0"  # Instantaneous flow
+    
+    gas_meter:
+      obis_codes:
+        - "7.30.0"  # Volume
+        - "8.30.0"  # Instantaneous flow
+  
+  # Configuración de puertos de comunicación
+  communication:
+    tcp_port: 4059
+    udp_port: 4059
+    timeout: 10
+    retry_attempts: 3
+    max_concurrent_connections: 50
+
+# =============================================================================
+# CONFIGURACIÓN OFFLINE
+# =============================================================================
+offline:
+  # Configuración del modo offline
+  enabled: true
+  max_offline_duration: 86400  # 24 horas en segundos
+  
+  # Configuración de caché local
+  cache:
+    local_storage_limit: 1000  # MB
+    max_records_per_device: 10000
+    cache_cleanup_interval: 3600  # 1 hora
+  
+  # Configuración de sincronización diferida
+  deferred_sync:
+    enabled: true
+    priority_order:
+      - "critical_alarms"
+      - "telemetry_fast"
+      - "telemetry_normal"
+      - "events"
+      - "device_metadata"
+  
+  # Configuración de persistencia offline
+  persistence:
+    storage_engine: "sqlite"  # sqlite, file
+    file_format: "json"       # json, csv
+    compression_enabled: true
+    encryption_enabled: false
+
+# =============================================================================
+# CONFIGURACIÓN DE LOGGING
+# =============================================================================
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  file: "./logs/dlms_sync.log"
+  max_file_size: 10  # MB
+  backup_count: 5
+  
+  # Configuración de logs específicos
+  components:
+    database: "INFO"
+    sync: "DEBUG"
+    devices: "INFO"
+    thingsboard: "INFO"
+    offline: "INFO"
+
+# =============================================================================
+# CONFIGURACIÓN DE MONITOREO
+# =============================================================================
+monitoring:
+  enabled: true
+  health_check_interval: 60  # segundos
+  
+  # Métricas del sistema
+  metrics:
+    collect_system_metrics: true
+    collect_device_metrics: true
+    collect_sync_metrics: true
+  
+  # Configuración de alertas
+  alerts:
+    sync_failure_threshold: 3
+    offline_duration_threshold: 3600  # 1 hora
+    database_size_threshold: 1000  # MB
+    error_rate_threshold: 10  # porcentaje
+  
+  # Endpoints para notificaciones
+  notification_endpoints:
+    email:
+      enabled: false
+      smtp_server: "localhost"
+      smtp_port: 587
+      username: ""
+      password: ""
+      recipients: []
+    
+    webhook:
+      enabled: false
+      url: ""
+      timeout: 10
+
+# =============================================================================
+# CONFIGURACIÓN DE DESARROLLO
+# =============================================================================
+development:
+  debug_mode: false
+  mock_thingsboard: false
+  mock_devices: false
+  
+  # Configuración de testing
+  testing:
+    simulate_offline_periods: false
+    offline_duration_test: 300  # 5 minutos
+    sync_failure_simulation: false
+    failure_rate: 0.1  # 10%
+
+# =============================================================================
+# CONFIGURACIÓN DE SEGURIDAD
+# =============================================================================
+security:
+  # Configuración SSL/TLS
+  ssl:
+    enabled: false
+    verify_certificates: true
+    ca_bundle_path: ""
+    client_cert_path: ""
+    client_key_path: ""
+  
+  # Configuración de encriptación
+  encryption:
+    enabled: false
+    algorithm: "AES-256-GCM"
+    key_rotation_interval: 86400  # 24 horas
+  
+  # Configuración de acceso
+  access_control:
+    allowed_ips: []
+    api_rate_limit: 100  # requests per minute
+    session_timeout: 3600  # 1 hora
+
+# =============================================================================
+# VARIABLES DE ENTORNO REQUERIDAS
+# =============================================================================
+# Las siguientes variables deben estar definidas en el entorno:
+# TB_PASSWORD         - Contraseña para ThingsBoard
+# TB_TENANT_ID        - ID del tenant en ThingsBoard  
+# TB_DEVICE_TOKEN     - Token de acceso del dispositivo
+# DB_ENCRYPTION_KEY   - Clave para encriptación de base de datos (opcional)
