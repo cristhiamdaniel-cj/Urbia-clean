@@ -66,28 +66,10 @@ except ImportError:
     
     dlms_service = MockDLMSService()
 
-# Línea 70
+# Configuración de la aplicación Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'urbia_dlms_dashboard_2025'
 socketio = SocketIO(app, cors_allowed_origins="*")
-
-# Configuración de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-# ============================================================================
-# REGISTRAR RUTAS THINGSBOARD UNAL - DATOS REALES
-# ============================================================================
-try:
-    import sys
-    from pathlib import Path
-    routes_path = Path(__file__).parent.parent / "api" / "routes"
-    sys.path.insert(0, str(routes_path))
-    from thingsboard_real_routes import register_thingsboard_routes
-    register_thingsboard_routes(app)
-    logger.info("✅ Rutas ThingsBoard UNAL registradas en /thingsboard-unal/*")
-except Exception as e:
-    logger.warning(f"⚠️ No se pudieron cargar rutas ThingsBoard: {e}")
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO)

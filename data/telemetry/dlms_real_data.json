@@ -1,10 +1,10 @@
 [
   {
-    "id": "DLMS-Meter-01_active_energy_total_1762442170902",
+    "id": "DLMS-Meter-01_active_energy_total_1762549254170",
     "sensor_id": "DLMS-Meter-01_active_energy_total",
     "sensor_type": "active_energy_total",
-    "timestamp": "2025-11-06T10:16:10.902000",
-    "value": 60.03,
+    "timestamp": "2025-11-07T16:00:54.170000",
+    "value": 59.97,
     "unit": "kWh",
     "location": {
       "lat": 4.6381,
@@ -18,15 +18,15 @@
       "description": "Energ\u00eda Activa Total",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871636"
+      "sync_time": "2025-11-08T20:44:42.722337"
     }
   },
   {
-    "id": "DLMS-Meter-01_active_energy_l1_1762442170902",
+    "id": "DLMS-Meter-01_active_energy_l1_1762549309730",
     "sensor_id": "DLMS-Meter-01_active_energy_l1",
     "sensor_type": "active_energy_l1",
-    "timestamp": "2025-11-06T10:16:10.902000",
-    "value": 135.09,
+    "timestamp": "2025-11-07T16:01:49.730000",
+    "value": 135.55,
     "unit": "kWh",
     "location": {
       "lat": 4.6381,
@@ -40,15 +40,15 @@
       "description": "Energ\u00eda Activa L1",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871644"
+      "sync_time": "2025-11-08T20:44:42.722347"
     }
   },
   {
-    "id": "DLMS-Meter-01_active_energy_l2_1762442170902",
+    "id": "DLMS-Meter-01_active_energy_l2_1762549309730",
     "sensor_id": "DLMS-Meter-01_active_energy_l2",
     "sensor_type": "active_energy_l2",
-    "timestamp": "2025-11-06T10:16:10.902000",
-    "value": 1.324,
+    "timestamp": "2025-11-07T16:01:49.730000",
+    "value": 1.322,
     "unit": "kWh",
     "location": {
       "lat": 4.6381,
@@ -62,15 +62,15 @@
       "description": "Energ\u00eda Activa L2",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871651"
+      "sync_time": "2025-11-08T20:44:42.722356"
     }
   },
   {
-    "id": "DLMS-Meter-01_active_energy_l3_1762442170902",
+    "id": "DLMS-Meter-01_active_energy_l3_1762549254170",
     "sensor_id": "DLMS-Meter-01_active_energy_l3",
     "sensor_type": "active_energy_l3",
-    "timestamp": "2025-11-06T10:16:10.902000",
-    "value": 0.6,
+    "timestamp": "2025-11-07T16:00:54.170000",
+    "value": 0.5,
     "unit": "kWh",
     "location": {
       "lat": 4.6381,
@@ -84,15 +84,15 @@
       "description": "Energ\u00eda Activa L3",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871656"
+      "sync_time": "2025-11-08T20:44:42.722362"
     }
   },
   {
-    "id": "DLMS-Meter-01_active_energy_phase_1762442170902",
+    "id": "DLMS-Meter-01_active_energy_phase_1762549254170",
     "sensor_id": "DLMS-Meter-01_active_energy_phase",
     "sensor_type": "active_energy_phase",
-    "timestamp": "2025-11-06T10:16:10.902000",
-    "value": 56377.0,
+    "timestamp": "2025-11-07T16:00:54.170000",
+    "value": 56395.0,
     "unit": "kWh",
     "location": {
       "lat": 4.6381,
@@ -106,7 +106,7 @@
       "description": "Energ\u00eda Activa por Fase",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871662"
+      "sync_time": "2025-11-08T20:44:42.722369"
     }
   },
   {
@@ -128,7 +128,7 @@
       "description": "Energ\u00eda Activa Total",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871666"
+      "sync_time": "2025-11-08T20:44:42.722375"
     }
   },
   {
@@ -150,7 +150,7 @@
       "description": "Energ\u00eda Activa L1",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871672"
+      "sync_time": "2025-11-08T20:44:42.722382"
     }
   },
   {
@@ -172,7 +172,7 @@
       "description": "Energ\u00eda Activa L2",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871677"
+      "sync_time": "2025-11-08T20:44:42.722388"
     }
   },
   {
@@ -194,7 +194,7 @@
       "description": "Energ\u00eda Activa L3",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871682"
+      "sync_time": "2025-11-08T20:44:42.722395"
     }
   },
   {
@@ -216,7 +216,7 @@
       "description": "Energ\u00eda Activa por Fase",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871688"
+      "sync_time": "2025-11-08T20:44:42.722401"
     }
   },
   {
@@ -238,7 +238,7 @@
       "description": "Energ\u00eda Reactiva Total",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871694"
+      "sync_time": "2025-11-08T20:44:42.722407"
     }
   },
   {
@@ -260,7 +260,7 @@
       "description": "Energ\u00eda Reactiva L1",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871700"
+      "sync_time": "2025-11-08T20:44:42.722413"
     }
   },
   {
@@ -282,7 +282,7 @@
       "description": "Energ\u00eda Reactiva L2",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871704"
+      "sync_time": "2025-11-08T20:44:42.722420"
     }
   },
   {
@@ -304,7 +304,7 @@
       "description": "Energ\u00eda Reactiva L3",
       "source": "thingsboard_unal_ssh",
       "real_data": true,
-      "sync_time": "2025-11-06T10:17:14.871710"
+      "sync_time": "2025-11-08T20:44:42.722426"
     }
   }
 ]

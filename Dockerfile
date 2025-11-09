@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
     flask==2.3.0 \
     flask-cors==4.0.0 \
+    flask-socketio \
     pyyaml==6.0.1 \
     requests==2.31.0 \
     pytest==7.4.0 \
